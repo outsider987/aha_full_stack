@@ -4,6 +4,8 @@ import {PassportModule} from '@nestjs/passport';
 import {AuthController} from './auth.controller';
 import {AuthService} from './auth.service';
 import {JwtStrategy} from './strategy/jwt.strategy';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from 'src/entity/user.entity';
 
 @Module({
   imports: [
@@ -12,6 +14,7 @@ import {JwtStrategy} from './strategy/jwt.strategy';
       secret: process.env.AUTH0_SECRET, // Your Auth0 secret
       signOptions: {expiresIn: '1h'},
     }),
+    TypeOrmModule.forFeature([User]),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
