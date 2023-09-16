@@ -4,8 +4,8 @@ import {PassportModule} from '@nestjs/passport';
 import {AuthController} from './auth.controller';
 import {AuthService} from './auth.service';
 import {JwtStrategy} from './strategy/jwt.strategy';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from 'src/entity/user.entity';
+import {TypeOrmModule} from '@nestjs/typeorm';
+import {User} from 'src/entity/user.entity';
 
 @Module({
   imports: [
