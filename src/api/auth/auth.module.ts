@@ -6,6 +6,9 @@ import {AuthService} from './auth.service';
 import {JwtStrategy} from './strategy/jwt.strategy';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import {User} from 'src/entity/user.entity';
+import {RefreshToken} from 'src/entity/refreshTokens.entity';
+import {ConfigModule} from '@nestjs/config';
+import {GoogleStrategy} from './strategy/google.strategy';
 
 @Module({
   imports: [
@@ -14,10 +17,11 @@ import {User} from 'src/entity/user.entity';
       secret: process.env.AUTH0_SECRET, // Your Auth0 secret
       signOptions: {expiresIn: '1h'},
     }),
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, RefreshToken]),
+    ConfigModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, GoogleStrategy, JwtStrategy],
   exports: [PassportModule, JwtModule],
 })
 

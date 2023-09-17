@@ -1,9 +1,17 @@
-import {Injectable} from '@nestjs/common';
+import {HttpStatus, Injectable} from '@nestjs/common';
 import {JwtService} from '@nestjs/jwt';
 import {InjectRepository} from '@nestjs/typeorm';
 import {User} from 'src/entity/user.entity';
 import {Repository} from 'typeorm';
 import {LoginDto} from './dtos/login.dto';
+import {RefreshTokenDto} from './dtos/refresh.dto';
+import {RefreshToken} from 'src/entity/refreshTokens.entity';
+import {RegisterDto} from './dtos/register.dto';
+import {JwtPayload} from './interface';
+import {
+  ApplicationErrorException,
+} from 'src/exceptions/application-error.exception';
+import bcrypt from 'bcrypt';
 
 
 @Injectable()
@@ -20,8 +28,11 @@ export class AuthService {
   constructor(private readonly jwtService: JwtService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(RefreshToken)
+    private readonly refreshTokenRepository: Repository<RefreshToken>,
+  ) {
 
-  ) {}
+  }
 
   /**
    * Generates a JWT token based on the user's ID.
@@ -60,12 +71,11 @@ export class AuthService {
 
     if (!user) {
       const user = this.userRepository.create({
+        userName: profile.name,
         googleId: profile.id,
         email: profile.emails[0].value,
-        // Add other profile data as needed
       });
 
-      // Save the new user to the database
       await this.userRepository.save(user);
     }
 
@@ -80,35 +90,90 @@ export class AuthService {
    * @throws {Error} - If the user doesn't exist.
    */
   async login(dto: LoginDto, provider:'google'|'local') {
-    const payload = {username: dto.email, sub: dto.password, provider};
-    return {
-      accessToken: this.jwtService.sign(payload),
-    };
+    const user = await this.userRepository.findOne({where: {email: dto.email}});
+    // If the user doesn't exist, throw an error
+    if (user) {
+      throw new ApplicationErrorException(
+          'E_0002',
+          undefined,
+          HttpStatus.UNAUTHORIZED
+      );
+    }
+    const payload:JwtPayload = {userName: user.userName, provider};
+
+    // If the user exists, generate a JWT token
+    switch (provider) {
+      case 'google':
+        return this.generateTokens(payload, user.id);
+      case 'local':
+        if (await !bcrypt.compare(user.password, dto.password)) {
+          throw new ApplicationErrorException(
+              'E_0003',
+              undefined, HttpStatus.UNAUTHORIZED
+          );
+        }
+        return this.generateTokens(payload, user.id);
+      default:
+        throw new ApplicationErrorException(
+            'UNKNOWN'
+            , undefined,
+            HttpStatus.BAD_REQUEST
+        );
+    }
+  }
+  /**
+   * Generates a JWT token based on the user's ID.
+   * @param {JwtPayload} payload - The payload to sign.
+   * @param {string} userId - The ID of the user to generate the token for.
+   * @return {Promise<string>} - The generated JWT token.
+   */
+  async generateTokens(payload: JwtPayload, userId) {
+    const accessToken = this.jwtService.sign(payload, {expiresIn: '1h'});
+    const refreshToken = this.jwtService.sign(payload, {expiresIn: '6h'});
+    const refreshTokenEntity = this.refreshTokenRepository.create({
+      userId: userId,
+      refreshToken,
+    });
+    await this.refreshTokenRepository.save(refreshTokenEntity);
+    return {accessToken, refreshToken};
   }
 
   /**
    * Registers a user.
-   * @param {any} dto - The user to register.
+   * @param {RegisterDto} dto - The user to register.
    * @return {Promise<{ access_token: string }>} - The generated JWT token.
    * @throws {Error} - If the user already exists.
    */
-  async register(dto: LoginDto) {
+  async register(dto: RegisterDto) {
     const user = await this.userRepository.findOne({where: {email: dto.email}});
+    // If the user already exists, throw an error
     if (user) {
-      throw new Error('User already exists');
+      throw new ApplicationErrorException(
+          'E_0004',
+          undefined,
+          HttpStatus.UNAUTHORIZED
+      );
     }
+    const payload:JwtPayload = {userName: dto.userName, provider: 'local'};
+    // If the user doesn't exist, generate a JWT token
+    return this.generateTokens(payload, user.id);
+  }
 
-    const newUser = this.userRepository.create({
-      email: dto.email,
-      password: dto.password,
-    });
-
-    await this.userRepository.save(newUser);
-
-    const payload = {username: dto.email, sub: dto.password};
-    return {
-      accessToken: this.jwtService.sign(payload),
-
-    };
+  /**
+   * Refreshes a JWT token.
+   * @param {RefreshTokenDto} dto - The refresh token DTO.
+   * @return {Promise<{ accessToken: string }>} - The generated JWT token.
+   * @throws {Error} - If the token is invalid.
+   */
+  async refresh(dto: RefreshTokenDto) {
+    const refreshtoken = await this.refreshTokenRepository.findOne({where: {
+      refreshToken: dto.refreshToken,
+    }});
+    if (refreshtoken) {
+      const payload = {username: refreshtoken.userId, sub: refreshtoken.userId};
+      return {
+        accessToken: this.jwtService.sign(payload),
+      };
+    }
   }
 }

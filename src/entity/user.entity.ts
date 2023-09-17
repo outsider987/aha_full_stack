@@ -1,6 +1,6 @@
 import {OneToMany, Entity, PrimaryGeneratedColumn,
   Column, CreateDateColumn, UpdateDateColumn} from 'typeorm';
-import {OAuthToken} from './oauthTokens.entity';
+import {RefreshToken} from './refreshTokens.entity';
 
 @Entity('users')
 /**
@@ -19,7 +19,7 @@ export class User {
     id: number;
 
   @Column({type: 'varchar', length: 255, nullable: false})
-    username: string;
+    userName: string;
 
   @Column({type: 'varchar', length: 255, nullable: false, unique: true})
     email: string;
@@ -43,6 +43,6 @@ export class User {
   @Column()
     provider: string;
 
-  @OneToMany(() => OAuthToken, (oauthToken) => oauthToken.user)
-    oauthTokens: OAuthToken[];
+  @OneToMany(() => RefreshToken, (token) => token.userId)
+    refreshTokens: RefreshToken[];
 }
