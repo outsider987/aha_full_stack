@@ -4,7 +4,10 @@ export default () => ({
   tz: process.env.TZ,
   jwt: {
     secret: process.env.JWT_SECRET,
-    expirationTime: parseInt(process.env.JWT_EXPIRATION_TIME, 10) || 86400000,
+    expiresIn: parseInt(process.env.JWT_EXPIRATION_TIME, 10) || 86400000,
+    refreshExpiresIn: parseInt(
+        process.env.JWT_REFRESH_EXPIRATION_TIME, 10
+    ) || 86400000,
   },
   defaultConnection: {
     type: 'mysql',

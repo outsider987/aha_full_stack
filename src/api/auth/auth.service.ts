@@ -11,7 +11,8 @@ import {JwtPayload} from './interface';
 import {
   ApplicationErrorException,
 } from 'src/exceptions/application-error.exception';
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
+import {ConfigService} from '@nestjs/config';
 
 
 @Injectable()
@@ -30,6 +31,7 @@ export class AuthService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepository: Repository<RefreshToken>,
+    private readonly config: ConfigService
   ) {
 
   }
@@ -128,8 +130,14 @@ export class AuthService {
    * @return {Promise<string>} - The generated JWT token.
    */
   async generateTokens(payload: JwtPayload, userId) {
-    const accessToken = this.jwtService.sign(payload, {expiresIn: '1h'});
-    const refreshToken = this.jwtService.sign(payload, {expiresIn: '6h'});
+    const secret = this.config.get('jwt.secret');
+    const expiresIn = this.config.get('jwt.expiresIn');
+    const refreshExpiresIn = this.config.get('jwt.refreshExpiresIn');
+    const accessToken = this.jwtService.sign(payload, {expiresIn, secret});
+    const refreshToken = this.jwtService.sign(
+        payload,
+        {expiresIn: refreshExpiresIn, secret}
+    );
     const refreshTokenEntity = this.refreshTokenRepository.create({
       userId: userId,
       refreshToken,
@@ -153,10 +161,19 @@ export class AuthService {
           undefined,
           HttpStatus.UNAUTHORIZED
       );
+    } else {
+      const password = bcrypt.hashSync(dto.password, 15);
+      const user = this.userRepository.create({
+        userName: dto.userName,
+        email: dto.email,
+        password: password,
+        provider: 'local',
+      });
+      await this.userRepository.save(user);
+      const payload:JwtPayload = {userName: dto.userName, provider: 'local'};
+      // If the user doesn't exist, generate a JWT token
+      return this.generateTokens(payload, user.id);
     }
-    const payload:JwtPayload = {userName: dto.userName, provider: 'local'};
-    // If the user doesn't exist, generate a JWT token
-    return this.generateTokens(payload, user.id);
   }
 
   /**
