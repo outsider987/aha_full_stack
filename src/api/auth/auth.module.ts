@@ -5,8 +5,8 @@ import {AuthController} from './auth.controller';
 import {AuthService} from './auth.service';
 import {JwtStrategy} from './strategy/jwt.strategy';
 import {TypeOrmModule} from '@nestjs/typeorm';
-import {User} from 'src/entity/user.entity';
-import {RefreshToken} from 'src/entity/refreshTokens.entity';
+import {User} from 'src/entities/user.entity';
+import {RefreshToken} from 'src/entities/refreshTokens.entity';
 import {ConfigModule} from '@nestjs/config';
 import {GoogleStrategy} from './strategy/google.strategy';
 

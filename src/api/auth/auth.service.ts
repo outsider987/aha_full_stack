@@ -1,11 +1,11 @@
 import {HttpStatus, Injectable} from '@nestjs/common';
 import {JwtService} from '@nestjs/jwt';
 import {InjectRepository} from '@nestjs/typeorm';
-import {User} from 'src/entity/user.entity';
+import {User} from 'src/entities/user.entity';
 import {Repository} from 'typeorm';
 import {LoginDto} from './dtos/login.dto';
 import {RefreshTokenDto} from './dtos/refresh.dto';
-import {RefreshToken} from 'src/entity/refreshTokens.entity';
+import {RefreshToken} from 'src/entities/refreshTokens.entity';
 import {RegisterDto} from './dtos/register.dto';
 import {JwtPayload} from './interface';
 import {
@@ -92,7 +92,7 @@ export class AuthService {
   async login(dto: LoginDto, provider:'google'|'local') {
     const user = await this.userRepository.findOne({where: {email: dto.email}});
     // If the user doesn't exist, throw an error
-    if (user) {
+    if (!user) {
       throw new ApplicationErrorException(
           'E_0002',
           undefined,

@@ -7,6 +7,7 @@ import {JwtService} from '@nestjs/jwt';
 import {AuthModule} from './api/auth/auth.module';
 import {LoggerMiddleware} from './middleware/logger.middleware';
 import {LocaleMiddleware} from './middleware/local.middleware';
+import {HealthChecksModule} from './api/health-checks/health-checks.module';
 
 @Module({
   imports: [
@@ -25,7 +26,9 @@ import {LocaleMiddleware} from './middleware/local.middleware';
       cache: true,
       load: [configuration],
     }),
+    HealthChecksModule,
     AuthModule,
+
   ],
   controllers: [],
   providers: [JwtService],
@@ -44,7 +47,7 @@ export class AppModule implements NestModule {
      */
   configure(consumer: MiddlewareConsumer): any {
     consumer
-        .apply(LoggerMiddleware, LocaleMiddleware)
+        .apply( LoggerMiddleware, LocaleMiddleware)
         .exclude({path: '/health-check', method: RequestMethod.GET})
         .forRoutes('*');
   }
