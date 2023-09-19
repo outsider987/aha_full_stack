@@ -1,7 +1,6 @@
 import {HttpException, HttpStatus} from '@nestjs/common';
 import {failureResponse} from '../utils/response';
 import errorCodesExternal from '../config/errorCodesExternal';
-
 import * as logger from '../utils/logger';
 
 /**

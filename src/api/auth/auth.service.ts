@@ -69,18 +69,18 @@ export class AuthService {
    */
   async findOrCreateGoogleUser(profile: any): Promise<User> {
     const user =await this.userRepository.findOne({where:
-       {googleId: profile.id}});
+       {googleId: profile.id, email: profile.emails[0].value}});
 
     if (!user) {
       const user = this.userRepository.create({
-        userName: profile.name,
+        userName: profile.name.familyName+profile.name.givenName,
         googleId: profile.id,
         email: profile.emails[0].value,
       });
 
       await this.userRepository.save(user);
+      return user;
     }
-
     return user;
   }
 

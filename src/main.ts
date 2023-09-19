@@ -2,14 +2,14 @@ import {NestFactory} from '@nestjs/core';
 import {AppModule} from './app.module';
 import {ValidationPipe} from '@nestjs/common';
 import {AllExceptionFilter} from './exceptions/all-exception.filter';
-// somewhere in your initialization file
+import * as cookieParser from 'cookie-parser';
 
 
 /**
  * Boots the NestJS application.
  */
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {cors: true});
+  const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(
       new ValidationPipe({
         stopAtFirstError: true,
@@ -19,7 +19,13 @@ async function bootstrap() {
       }),
   );
   app.useGlobalFilters(new AllExceptionFilter());
-
+  app.enableCors({
+    origin: [
+      'https://accounts.google.com', // Google OAuth server domain
+    ],
+    credentials: true,
+  });
+  app.use(cookieParser());
   await app.listen(3000);
 }
 bootstrap();

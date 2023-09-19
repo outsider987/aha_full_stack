@@ -9,6 +9,7 @@ import {User} from 'src/entities/user.entity';
 import {RefreshToken} from 'src/entities/refreshTokens.entity';
 import {ConfigModule} from '@nestjs/config';
 import {GoogleStrategy} from './strategy/google.strategy';
+import {EmailService} from '../email/email.service';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import {GoogleStrategy} from './strategy/google.strategy';
     ConfigModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy, JwtStrategy],
+  providers: [AuthService, GoogleStrategy, JwtStrategy, EmailService],
   exports: [PassportModule, JwtModule],
 })
 

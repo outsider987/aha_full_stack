@@ -8,11 +8,11 @@ import {LoginDto} from './dtos/login.dto';
 import {successResponse} from 'src/utils/response';
 import {RefreshTokenDto} from './dtos/refresh.dto';
 import {RegisterDto} from './dtos/register.dto';
-import cookie from 'cookie';
 import {ConfigService} from '@nestjs/config';
 import {
   ApplicationErrorException,
 } from 'src/exceptions/application-error.exception';
+import {localLog} from 'src/utils/logger';
 
 
 @Controller('auth')
@@ -65,7 +65,9 @@ export class AuthController {
      */
     @Get('google')
     @UseGuards(AuthGuard('google'))
-    async googleLogin() {}
+    async googleLogin() {
+      localLog('googleLogin sucess');
+    }
 
     /**
      * Login endpoint for google authentication call back.
@@ -80,18 +82,14 @@ export class AuthController {
       @Req() req,
       @Res({passthrough: true}) res
     ) {
+      localLog('start to googleLoginCallback');
       const token = await this.authService.login(req.user, 'google');
-      const cookies = cookie.serialize('jwtToken', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 24 * 60 * 60,
-        path: '/',
-      });
+      res.cookie('jwtAccessToken', token.accessToken, );
+      res.cookie('jwtRefreshToken', token.refreshToken, );
 
-      const backEndPoint=this.config.get('backEndPoint');
-      const redirectUrl = `${backEndPoint}/login?token=${token}`;
-      res.setHeader('Set-Cookie', cookies);
+      const frontEndPoint=this.config.get('frontEndPoint');
+      const redirectUrl = `${frontEndPoint}`;
+      console.log(' googleLoginCallback redirectUrl', redirectUrl);
       res.redirect(302, redirectUrl);
     }
 

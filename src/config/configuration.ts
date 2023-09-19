@@ -1,6 +1,7 @@
 export default () => ({
   frontEndPoint: process.env.FRONTEND_ENDPOINT,
   backEndPoint: process.env.BACKEND_ENDPOINT,
+  SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
   tz: process.env.TZ,
   jwt: {
     secret: process.env.JWT_SECRET,

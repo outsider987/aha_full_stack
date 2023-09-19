@@ -23,11 +23,15 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
   /**
    * Validates the user based on the profile extracted from the JWT token.
+   * @param {string} accessToken
+   * - The access token extracted from the JWT token.
+   * @param {string} refreshToken
+   * - The refresh token extracted from the JWT token.
    * @param {any} profile - The profile extracted from the JWT token.
    * @return {Promise<any>} - An object containing user information.
    * @throws {Error} - If the user already exists.
    */
-  async validate( profile: any) {
+  async validate( accessToken: string, refreshToken: string, profile: any) {
     const user = await this.authService.findOrCreateGoogleUser(profile);
     return user;
   }
