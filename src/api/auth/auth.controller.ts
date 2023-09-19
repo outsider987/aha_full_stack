@@ -1,4 +1,7 @@
-import {Body, Controller, Get, Post, Req, Res, UseGuards} from '@nestjs/common';
+import {
+  Body, Controller, Get,
+  HttpStatus, Post, Req,
+  Res, UseGuards} from '@nestjs/common';
 import {AuthService} from './auth.service';
 import {AuthGuard} from '@nestjs/passport';
 import {LoginDto} from './dtos/login.dto';
@@ -7,6 +10,9 @@ import {RefreshTokenDto} from './dtos/refresh.dto';
 import {RegisterDto} from './dtos/register.dto';
 import cookie from 'cookie';
 import {ConfigService} from '@nestjs/config';
+import {
+  ApplicationErrorException,
+} from 'src/exceptions/application-error.exception';
 
 
 @Controller('auth')
@@ -47,7 +53,8 @@ export class AuthController {
     @Post('register')
     async register(@Body() dto:RegisterDto) {
       if (dto.password !== dto.confirmPassword) {
-        throw new Error('Passwords do not match');
+        throw new ApplicationErrorException(
+            'E_0005', null, HttpStatus.UNAUTHORIZED);
       }
       const token = await this.authService.register(dto);
       return {token};

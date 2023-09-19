@@ -90,6 +90,7 @@ export class AuthService {
    * @param {string} provider - The provider of the user.
    * @return {Promise<{ access_token: string }>} - The generated JWT token.
    * @throws {Error} - If the user doesn't exist.
+   * @throws {Error} - If the password is incorrect.
    */
   async login(dto: LoginDto, provider:'google'|'local') {
     const user = await this.userRepository.findOne({where: {email: dto.email}});

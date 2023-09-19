@@ -19,6 +19,11 @@ export default {
     En: 'alreadt refistered',
     Cn: '已經註冊',
   },
+  E_0005:
+  {
+    En: 'confirned password is not match',
+    Cn: '確認密碼不匹配',
+  },
   UNKNOWN:
   {
     En: 'Unknown error',
