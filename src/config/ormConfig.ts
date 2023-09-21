@@ -11,7 +11,7 @@ export const ormConfig = new DataSource({
   password: String(process.env.DB_PASSWORD),
   database: String(process.env.DB_NAME),
   migrations: ['dist/migrations/*.js'],
-  entities: ['dist/**/entity/*.js'],
+  entities: ['dist/**/entities/*.js'],
   synchronize: false,
 
 });

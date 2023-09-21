@@ -9,7 +9,7 @@ import * as cookieParser from 'cookie-parser';
  * Boots the NestJS application.
  */
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {cors: true});
   app.useGlobalPipes(
       new ValidationPipe({
         stopAtFirstError: true,
@@ -19,12 +19,13 @@ async function bootstrap() {
       }),
   );
   app.useGlobalFilters(new AllExceptionFilter());
-  app.enableCors({
-    origin: [
-      'https://accounts.google.com', // Google OAuth server domain
-    ],
-    credentials: true,
-  });
+  // app.enableCors({
+  //   origin: [
+  //     'https://accounts.google.com', // Google OAuth server domain
+  //     'http://localhost',
+  //   ],
+  //   credentials: true,
+  // });
   app.use(cookieParser());
   await app.listen(3000);
 }
