@@ -10,15 +10,16 @@ import {RefreshToken} from 'src/entities/refreshTokens.entity';
 import {ConfigModule} from '@nestjs/config';
 import {GoogleStrategy} from './strategy/google.strategy';
 import {EmailService} from '../email/email.service';
+import {VerifyEmail} from 'src/entities/verifyEmail.entity';
 
 @Module({
   imports: [
     PassportModule.register({defaultStrategy: 'jwt'}),
     JwtModule.register({
-      secret: process.env.AUTH0_SECRET, // Your Auth0 secret
+      secret: process.env.AUTH0_SECRET,
       signOptions: {expiresIn: '1h'},
     }),
-    TypeOrmModule.forFeature([User, RefreshToken]),
+    TypeOrmModule.forFeature([User, RefreshToken, VerifyEmail]),
     ConfigModule,
   ],
   controllers: [AuthController],

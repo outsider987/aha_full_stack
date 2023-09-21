@@ -1,6 +1,7 @@
 import {OneToMany, Entity, PrimaryGeneratedColumn,
   Column, CreateDateColumn, UpdateDateColumn} from 'typeorm';
 import {RefreshToken} from './refreshTokens.entity';
+import {VerifyEmail} from './verifyEmail.entity';
 
 @Entity('users')
 /**
@@ -28,9 +29,6 @@ export class User {
 
     password: string;
 
-  @Column({nullable: true})
-    verificationToken: string | null;
-
   @CreateDateColumn({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
     createdAt: Date;
 
@@ -46,6 +44,12 @@ export class User {
   @Column()
     provider: string;
 
+  @Column()
+    isEmailConfirmed: boolean;
+
   @OneToMany(() => RefreshToken, (token) => token.userId)
     refreshTokens: RefreshToken[];
+
+  @OneToMany(() => VerifyEmail, (verifyEmail) => verifyEmail.user)
+    verifyEmails: VerifyEmail[];
 }

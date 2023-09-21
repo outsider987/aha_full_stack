@@ -1,6 +1,6 @@
 import {
   Body, Controller, Get,
-  HttpStatus, Post, Req,
+  HttpStatus, Param, Post, Req,
   Res, UseGuards} from '@nestjs/common';
 import {AuthService} from './auth.service';
 import {AuthGuard} from '@nestjs/passport';
@@ -13,6 +13,7 @@ import {
   ApplicationErrorException,
 } from 'src/exceptions/application-error.exception';
 import {localLog} from 'src/utils/logger';
+import {EmailService} from '../email/email.service';
 
 
 @Controller('auth')
@@ -26,8 +27,9 @@ export class AuthController {
      * @param {ConfigService} config - The injected ConfigService instance.
      */
   constructor(
-      private readonly authService: AuthService,
-      private readonly config: ConfigService
+      private readonly authService:AuthService,
+      private readonly config:ConfigService,
+      private readonly emailService:EmailService
   ) {}
 
     /**
@@ -56,8 +58,9 @@ export class AuthController {
         throw new ApplicationErrorException(
             'E_0005', null, HttpStatus.UNAUTHORIZED);
       }
-      const token = await this.authService.register(dto);
-      return {token};
+      await this.authService.register(dto);
+
+      this.emailService.sendVerificationEmail(dto.email);
     }
 
     /**
@@ -102,5 +105,20 @@ export class AuthController {
     async refresh(@Body() dto:RefreshTokenDto) {
       const {accessToken} = await this.authService.refresh(dto);
       return successResponse({data: accessToken});
+    }
+
+    /**
+     * @param {string} token - The verification token.
+     * @return {Promise<{ message: string }>} - The success message.
+     * @throws {Error} - If the token is invalid.
+     */
+    @Get('verify-email/:token')
+    async verifyEmail(@Param('token') token: string) {
+      if (!await this.emailService.findByVerificationToken(token)) {
+        throw new ApplicationErrorException(
+            'E_0006', null, HttpStatus.UNAUTHORIZED);
+      }
+
+      return successResponse({message: 'Email verification successful'});
     }
 }

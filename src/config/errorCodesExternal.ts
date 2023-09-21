@@ -24,6 +24,11 @@ export default {
     En: 'confirned password is not match',
     Cn: '確認密碼不匹配',
   },
+  E_0006:
+  {
+    En: 'Invalid email token',
+    Cn: '無效的email令牌',
+  },
   UNKNOWN:
   {
     En: 'Unknown error',
