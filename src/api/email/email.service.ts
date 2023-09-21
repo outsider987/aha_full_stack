@@ -44,16 +44,17 @@ export class EmailService {
     * @constructor
    */
   async sendVerificationEmail(to: string) {
-    const frontEndPoint = this.config.get('frontEndPoint');
-    const verificationLink = `${frontEndPoint}/verify-email?token=`;
+    const backEndPoint = this.config.get('backEndPoint');
+    const verificationLink = `${backEndPoint}/verify-email?token=`;
     const mailOptions = {
-      from: 'your_email@example.com',
+      from: 't790219520@gmail.com',
       to,
       subject: 'Email Verification',
       text: `Click the link to verify your email: ${verificationLink}`,
     };
 
-    await this.transporter.sendMail(mailOptions);
+    const res = await this.transporter.sendMail(mailOptions);
+    console.log(res);
   }
   /**
    * Creates a token for the specified email address.

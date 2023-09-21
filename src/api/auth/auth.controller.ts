@@ -60,7 +60,7 @@ export class AuthController {
       }
       await this.authService.register(dto);
 
-      this.emailService.sendVerificationEmail(dto.email);
+      return await this.emailService.sendVerificationEmail(dto.email);
     }
 
     /**

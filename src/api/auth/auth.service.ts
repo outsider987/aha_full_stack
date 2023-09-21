@@ -139,7 +139,7 @@ export class AuthService {
         payload,
         {expiresIn: refreshExpiresIn, secret}
     );
-    const refreshTokenEntity = this.refreshTokenRepository.create({
+    const refreshTokenEntity = await this.refreshTokenRepository.create({
       userId: userId,
       refreshToken,
     });
@@ -164,7 +164,7 @@ export class AuthService {
       );
     } else {
       const password = bcrypt.hashSync(dto.password, 15);
-      const user = this.userRepository.create({
+      const user = await this.userRepository.create({
         userName: dto.userName,
         email: dto.email,
         password: password,
