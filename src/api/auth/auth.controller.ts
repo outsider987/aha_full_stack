@@ -14,6 +14,7 @@ import {
 } from 'src/exceptions/application-error.exception';
 import {localLog} from 'src/utils/logger';
 import {EmailService} from '../email/email.service';
+import {Response} from 'express';
 
 
 @Controller('auth')
@@ -35,13 +36,22 @@ export class AuthController {
     /**
      * Login endpoint for generating a JWT token.
      * @param {LoginDto} dto - The login DTO.
+     * @param {Response} res - The response object.
      * @return {Promise<{ accessToken: string }>} - The generated JWT token.
+     * @throws {Error} - If the user does not exist.
      */
     @Post('login')
-  async login(@Body() dto: LoginDto) {
+  async login(@Body() dto:LoginDto, @Res({passthrough: true}) res:Response) {
     const {accessToken, refreshToken} = await this.authService.login(
         dto, 'local'
     );
+    await res.cookie('accessToken', accessToken,);
+    await res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict', // Set the SameSite attribute for security
+    });
+
     return successResponse({data: {accessToken, refreshToken}});
   }
 
@@ -83,17 +93,22 @@ export class AuthController {
     @UseGuards(AuthGuard('google'))
     async googleLoginCallback(
       @Req() req,
-      @Res({passthrough: true}) res
+      @Res({passthrough: true}) res:Response,
+
     ) {
       localLog('start to googleLoginCallback');
       const token = await this.authService.login(req.user, 'google');
-      res.cookie('jwtAccessToken', token.accessToken, );
-      res.cookie('jwtRefreshToken', token.refreshToken, );
+
+      // const test = JSON.stringify(token);
+      res.cookie('accessToken', token.accessToken);
+
+      const userObject = req.user.email;
+      res.cookie('profile', userObject);
 
       const frontEndPoint=this.config.get('frontEndPoint');
       const redirectUrl = `${frontEndPoint}`;
       console.log(' googleLoginCallback redirectUrl', redirectUrl);
-      res.redirect(302, redirectUrl);
+      await res.redirect(302, redirectUrl);
     }
 
     /**

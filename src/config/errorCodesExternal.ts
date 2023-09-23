@@ -29,6 +29,11 @@ export default {
     En: 'Invalid email token',
     Cn: '無效的email令牌',
   },
+  E_0007:
+  {
+    En: 'Invalid token',
+    Cn: '無效的令牌',
+  },
   UNKNOWN:
   {
     En: 'Unknown error',

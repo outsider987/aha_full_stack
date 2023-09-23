@@ -102,7 +102,11 @@ export class AuthService {
           HttpStatus.UNAUTHORIZED
       );
     }
-    const payload:JwtPayload = {userName: user.userName, provider};
+    const payload:JwtPayload = {
+      userName: user.userName,
+      provider,
+      email: user.email,
+    };
 
     // If the user exists, generate a JWT token
     switch (provider) {
@@ -171,7 +175,10 @@ export class AuthService {
         provider: 'local',
       });
       await this.userRepository.save(user);
-      const payload:JwtPayload = {userName: dto.userName, provider: 'local'};
+      const payload:JwtPayload = {
+        userName: dto.userName,
+        provider: 'local',
+        email: dto.email};
       // If the user doesn't exist, generate a JWT token
       return this.generateTokens(payload, user.id);
     }
