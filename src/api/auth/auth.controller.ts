@@ -15,6 +15,7 @@ import {
 import {localLog} from 'src/utils/logger';
 import {EmailService} from '../email/email.service';
 import {Response} from 'express';
+import {ResetPasswordDto} from './dtos/resetPassword.dto';
 
 
 @Controller('auth')
@@ -135,5 +136,42 @@ export class AuthController {
       }
 
       return successResponse({message: 'Email verification successful'});
+    }
+
+    /**
+     * @param {ResetPasswordDto} dto - The reset password DTO.
+     * @param {string} token - The reset password token.
+     * @return {Promise<{ message: string }>} - The success message.
+     * @throws {Error} - If the token is invalid.
+     * @throws {Error} - If the passwords do not match.
+     */
+  @Post('reset-password/:token')
+    async resetPassword(
+    @Body() dto: ResetPasswordDto,
+    @Param('token') token: string
+    ) {
+      const isValidToken = await this.authService.validateResetToken(token);
+
+      if (!isValidToken) {
+        throw new ApplicationErrorException(
+            'E_0007',
+            null,
+            HttpStatus.UNAUTHORIZED
+        );
+      }
+
+      // Check if the new password and confirmation password match
+      if (dto.password !== dto.confirmPassword) {
+        throw new ApplicationErrorException(
+            'E_0005',
+            null,
+            HttpStatus.UNAUTHORIZED
+        );
+      }
+
+      // Update the user's password
+      await this.authService.resetPassword(token, dto.password);
+
+      return successResponse({message: 'Password reset successful'});
     }
 }
