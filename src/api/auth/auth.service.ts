@@ -12,6 +12,7 @@ import {
 import * as bcrypt from 'bcrypt';
 import {ConfigService} from '@nestjs/config';
 import {EmailService} from '../email/email.service';
+import {LoginInformation} from 'src/entities/loginInformation.entity';
 
 
 @Injectable()
@@ -24,10 +25,14 @@ export class AuthService {
    * @param {JwtService} jwtService - The JWT service instance.
    * @param {Repository<User>} userRepository
    *  - The injected User repository instance.
+   * @param {ConfigService} config - The injected ConfigService instance.
+   * @param {EmailService} emailService - The injected EmailService instance.
    */
   constructor(private readonly jwtService: JwtService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(LoginInformation)
+    private readonly loginInformationRepository: Repository<LoginInformation>,
     private readonly config: ConfigService,
     private readonly emailService: EmailService,
   ) {
@@ -83,7 +88,7 @@ export class AuthService {
    */
   async login(dto: LoginDto, provider:'google'|'local') {
     const user = await this.userRepository.findOne({where: {email: dto.email}});
-    // If the user doesn't exist, throw an error
+
     if (!user) {
       throw new ApplicationErrorException(
           'E_0002',
@@ -112,6 +117,11 @@ export class AuthService {
       confirmed: user.isEmailConfirmed,
       email: user.email,
     };
+
+    this.loginInformationRepository.update(
+        {userId: user.id},
+        {loginCount: user.loginInformation.loginCount+1}
+    );
 
     // If the user exists, generate a JWT token
     switch (provider) {
@@ -174,7 +184,14 @@ export class AuthService {
         provider: 'local',
         confirmed: user.isEmailConfirmed,
         email: dto.email};
-      // If the user doesn't exist, generate a JWT token
+
+      const loginInformation = this.loginInformationRepository.create({
+        userId: user.id,
+        loginCount: 0,
+      });
+      await this.loginInformationRepository.save(loginInformation);
+
+
       return this.generateTokens(payload);
     }
   }

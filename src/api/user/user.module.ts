@@ -9,11 +9,12 @@ import {AuthModule} from '../auth/auth.module';
 import {AuthService} from '../auth/auth.service';
 import {EmailService} from '../email/email.service';
 import {VerifyEmail} from 'src/entities/verifyEmail.entity';
+import {LoginInformation} from 'src/entities/loginInformation.entity';
 
 @Module({
   imports: [
     PassportModule.register({defaultStrategy: 'jwt'}),
-    TypeOrmModule.forFeature([User, VerifyEmail]),
+    TypeOrmModule.forFeature([User, VerifyEmail, LoginInformation]),
     ConfigModule,
     AuthModule,
   ],

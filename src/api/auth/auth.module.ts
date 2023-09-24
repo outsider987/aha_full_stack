@@ -10,6 +10,7 @@ import {ConfigModule} from '@nestjs/config';
 import {GoogleStrategy} from './strategy/google.strategy';
 import {EmailService} from '../email/email.service';
 import {VerifyEmail} from 'src/entities/verifyEmail.entity';
+import {LoginInformation} from 'src/entities/loginInformation.entity';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import {VerifyEmail} from 'src/entities/verifyEmail.entity';
       secret: process.env.AUTH0_SECRET,
       signOptions: {expiresIn: '1h'},
     }),
-    TypeOrmModule.forFeature([User, VerifyEmail]),
+    TypeOrmModule.forFeature([User, VerifyEmail, LoginInformation]),
     ConfigModule,
 
   ],

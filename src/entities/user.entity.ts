@@ -7,52 +7,65 @@ import {LoginInformation} from './loginInformation.entity';
 /**
  * User entity.
  * @property {number} id - The ID of the user.
- * @property {string} username - The username of the user.
+ * @property {string} userName - The username of the user.
  * @property {string} email - The email of the user.
  * @property {string} password - The password of the user.
  * @property {Date} createdAt - The date the user was created.
  * @property {Date} updatedAt - The date the user was last updated.
- * @property {string} google_id - The Google ID of the user.
+ * @property {string} googleId - The Google ID of the user.
  * @property {string} provider - The provider of the user.
-    */
+ * @property {boolean} isEmailConfirmed - Indicates if the email is confirmed.
+ * @property {string} resetPasswordToken - The reset password token.
+ */
 export class User {
   @PrimaryGeneratedColumn()
     id: number;
 
-  @Column({type: 'varchar', length: 255, nullable: false})
+  @Column({name: 'user_name', type: 'varchar', length: 255, nullable: false})
     userName: string;
 
-  @Column({type: 'varchar', length: 255, nullable: false, unique: true})
+  @Column({
+    name: 'email',
+    type: 'varchar',
+    length: 255,
+    nullable: false,
+    unique: true,
+  })
     email: string;
 
-  @Column({type: 'varchar', length: 255, nullable: true})
-
+  @Column({name: 'password', type: 'varchar', length: 255, nullable: true})
     password: string;
 
-  @CreateDateColumn({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
-    createdAt: Date;
-
-  @UpdateDateColumn({
-    type: 'timestamp', default: () =>
-      'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP'})
-    updatedAt: Date;
-
-  @Column({nullable: true})
+  @Column({name: 'google_id', nullable: true})
     googleId: string;
 
-  @Column()
+  @Column({name: 'provider'})
     provider: string;
 
-  @Column()
+  @Column({name: 'is_email_confirmed'})
     isEmailConfirmed: boolean;
 
-  @Column({nullable: true})
+  @Column({name: 'reset_password_token', nullable: true})
     resetPasswordToken: string;
-
 
   @OneToMany(() => VerifyEmail, (verifyEmail) => verifyEmail.user)
     verifyEmails: VerifyEmail[];
+
   @OneToOne(() => LoginInformation, (loginInformation) => loginInformation)
     loginInformation: LoginInformation;
+
+  @CreateDateColumn({
+    name: 'created_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+    createdAt: Date;
+
+  @UpdateDateColumn({
+    name: 'updated_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+    updatedAt: Date;
 }

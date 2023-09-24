@@ -1,12 +1,13 @@
-import {Entity,
+import {
+  Entity,
   PrimaryGeneratedColumn,
   Column,
   JoinColumn,
   OneToOne,
   CreateDateColumn,
-  UpdateDateColumn} from 'typeorm';
+  UpdateDateColumn,
+} from 'typeorm';
 import {User} from './user.entity';
-
 
 @Entity('login_information')
 /**
@@ -20,19 +21,26 @@ export class LoginInformation {
   @PrimaryGeneratedColumn()
     id: number;
 
-  @OneToOne(() => User, (user) => user.id)
+  // Define the one-to-one relationship with User entity
+  @OneToOne(() => User, (user) => user.loginInformation)
   @JoinColumn({name: 'user_id'})
     userId: number;
 
-  @Column({default: 0})
+  @Column({name: 'login_count', default: 0})
     loginCount: number;
 
-  @Column({type: 'timestamp', nullable: true})
-    lastSessionTimestamp: Date;
+  @CreateDateColumn({
+    name: 'created_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+    createdAt: Date;
 
-  @CreateDateColumn({type: 'timestamp'})
-    signUpTimestamp: Date;
-
-  @UpdateDateColumn({type: 'timestamp'})
-    lastLoginTimestamp: Date;
+  @UpdateDateColumn({
+    name: 'updated_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+    updatedAt: Date;
 }
