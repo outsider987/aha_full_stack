@@ -16,6 +16,10 @@ import {localLog} from 'src/utils/logger';
 import {EmailService} from '../email/email.service';
 import {Response} from 'express';
 import {ResetPasswordDto} from './dtos/resetPassword.dto';
+import {JwtPayload} from './interface';
+import {InjectRepository} from '@nestjs/typeorm';
+import {User} from 'src/entities/user.entity';
+import {Repository} from 'typeorm/repository/Repository';
 
 
 @Controller('auth')
@@ -24,14 +28,16 @@ import {ResetPasswordDto} from './dtos/resetPassword.dto';
  */
 export class AuthController {
   /**
-     * AuthController constructor.
-     * @param {AuthService} authService - The injected AuthService instance.
-     * @param {ConfigService} config - The injected ConfigService instance.
-     */
+   * AuthController constructor.
+   * @param {AuthService} authService - The injected AuthService instance.
+   * @param {ConfigService} config - The injected ConfigService instance.
+   */
   constructor(
       private readonly authService:AuthService,
       private readonly config:ConfigService,
-      private readonly emailService:EmailService
+      private readonly emailService:EmailService,
+      @InjectRepository(User)
+      private readonly userRepository:Repository<User>,
   ) {}
 
     /**
@@ -47,11 +53,7 @@ export class AuthController {
         dto, 'local'
     );
     await res.cookie('accessToken', accessToken,);
-    await res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict', // Set the SameSite attribute for security
-    });
+    await res.cookie('refreshToken', refreshToken);
 
     return successResponse({data: {accessToken, refreshToken}});
   }
@@ -113,13 +115,16 @@ export class AuthController {
     }
 
     /**
-     * Refresh endpoint for generating a JWT token.
-     * @param {RefreshTokenDto} dto - The refresh token DTO.
-     * @return {Promise<{ token: string }>} - The generated JWT token.
+     * Logout endpoint for google authentication.
+     * @param {RefreshTokenDto} dto - The request object.
      */
     @Post('refresh')
-    async refresh(@Body() dto:RefreshTokenDto) {
-      const {accessToken} = await this.authService.refresh(dto);
+    async refresh( @Body() dto:RefreshTokenDto) {
+      const jwtPayload= await this.authService.validateJwtToken(
+          dto.refreshToken
+      ) as JwtPayload;
+
+      const {accessToken} = await this.authService.refresh(jwtPayload);
       return successResponse({data: accessToken});
     }
 
@@ -139,6 +144,26 @@ export class AuthController {
     }
 
     /**
+     * reset password
+     * @param {string}dto
+     */
+    @Post('reset-password')
+    async forgotPassword(@Body() dto: {email: string}) {
+      const user = await this.userRepository.findOne({
+        where: {email: dto.email},
+      });
+
+      if (!user) {
+        throw new ApplicationErrorException(
+            'E_0002', null, HttpStatus.UNAUTHORIZED);
+      }
+
+      await this.emailService.sendResetPasswordEmail(dto.email);
+
+      return successResponse({message: 'Password reset email sent'});
+    }
+
+    /**
      * @param {ResetPasswordDto} dto - The reset password DTO.
      * @param {string} token - The reset password token.
      * @return {Promise<{ message: string }>} - The success message.
@@ -150,15 +175,8 @@ export class AuthController {
     @Body() dto: ResetPasswordDto,
     @Param('token') token: string
     ) {
-      const isValidToken = await this.authService.validateResetToken(token);
+      await this.authService.validateResetToken(token);
 
-      if (!isValidToken) {
-        throw new ApplicationErrorException(
-            'E_0007',
-            null,
-            HttpStatus.UNAUTHORIZED
-        );
-      }
 
       // Check if the new password and confirmation password match
       if (dto.password !== dto.confirmPassword) {

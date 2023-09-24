@@ -6,7 +6,6 @@ import {AuthService} from './auth.service';
 import {JwtStrategy} from './strategy/jwt.strategy';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import {User} from 'src/entities/user.entity';
-import {RefreshToken} from 'src/entities/refreshTokens.entity';
 import {ConfigModule} from '@nestjs/config';
 import {GoogleStrategy} from './strategy/google.strategy';
 import {EmailService} from '../email/email.service';
@@ -19,8 +18,9 @@ import {VerifyEmail} from 'src/entities/verifyEmail.entity';
       secret: process.env.AUTH0_SECRET,
       signOptions: {expiresIn: '1h'},
     }),
-    TypeOrmModule.forFeature([User, RefreshToken, VerifyEmail]),
+    TypeOrmModule.forFeature([User, VerifyEmail]),
     ConfigModule,
+
   ],
   controllers: [AuthController],
   providers: [AuthService, GoogleStrategy, JwtStrategy, EmailService],

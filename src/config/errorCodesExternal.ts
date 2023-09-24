@@ -34,6 +34,11 @@ export default {
     En: 'Invalid token',
     Cn: '無效的令牌',
   },
+  E_008: {
+    En: 'unconfirmed email',
+    Cn: '未確認的電子郵件',
+  },
+
   UNKNOWN:
   {
     En: 'Unknown error',

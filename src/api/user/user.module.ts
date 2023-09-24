@@ -5,20 +5,25 @@ import {User} from 'src/entities/user.entity';
 import {ConfigModule} from '@nestjs/config';
 import {UserController} from './user.controller';
 import {UserService} from './user.service';
+import {AuthModule} from '../auth/auth.module';
+import {AuthService} from '../auth/auth.service';
+import {EmailService} from '../email/email.service';
+import {VerifyEmail} from 'src/entities/verifyEmail.entity';
 
 @Module({
   imports: [
     PassportModule.register({defaultStrategy: 'jwt'}),
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, VerifyEmail]),
     ConfigModule,
+    AuthModule,
   ],
   controllers: [UserController],
-  providers: [UserService],
-  exports: [],
+  providers: [UserService, AuthService, EmailService],
+  exports: [UserService],
 })
 
 /**
- * Auth module.
+ * USER module.
  */
-export class AuthModule {}
+export class UserModule {}
 

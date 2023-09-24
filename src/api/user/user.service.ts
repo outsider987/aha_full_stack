@@ -26,8 +26,9 @@ export class UserService {
    */
   async modifiName(dto:ChangeNameDto, email:string) {
     const user = await this.userRepository.findOne({where: {email}});
+    const oldName = user.userName;
     user.userName = dto.userName;
     await this.userRepository.save(user);
-    return user;
+    return {oldName, newName: user.userName};
   }
 }

@@ -4,8 +4,6 @@ import {InjectRepository} from '@nestjs/typeorm';
 import {User} from 'src/entities/user.entity';
 import {Repository} from 'typeorm';
 import {LoginDto} from './dtos/login.dto';
-import {RefreshTokenDto} from './dtos/refresh.dto';
-import {RefreshToken} from 'src/entities/refreshTokens.entity';
 import {RegisterDto} from './dtos/register.dto';
 import {JwtPayload} from './interface';
 import {
@@ -13,6 +11,7 @@ import {
 } from 'src/exceptions/application-error.exception';
 import * as bcrypt from 'bcrypt';
 import {ConfigService} from '@nestjs/config';
+import {EmailService} from '../email/email.service';
 
 
 @Injectable()
@@ -29,22 +28,12 @@ export class AuthService {
   constructor(private readonly jwtService: JwtService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    @InjectRepository(RefreshToken)
-    private readonly refreshTokenRepository: Repository<RefreshToken>,
-    private readonly config: ConfigService
+    private readonly config: ConfigService,
+    private readonly emailService: EmailService,
   ) {
 
   }
 
-  /**
-   * Generates a JWT token based on the user's ID.
-   * @param {string} userId - The ID of the user to generate the token for.
-   * @return {Promise<string>} - The generated JWT token.
-   */
-  async generateJwtToken(userId: string): Promise<string> {
-    const payload = {sub: userId};
-    return this.jwtService.signAsync(payload);
-  }
 
   /**
    * Validates a JWT token.
@@ -102,24 +91,34 @@ export class AuthService {
           HttpStatus.UNAUTHORIZED
       );
     }
+
+    if (await !bcrypt.compareSync(dto.password, user.password)) {
+      throw new ApplicationErrorException(
+          'E_0001',
+          undefined, HttpStatus.UNAUTHORIZED
+      );
+    }
+
+    if (!user.isEmailConfirmed) {
+      throw new ApplicationErrorException(
+          'E_008',
+          undefined, HttpStatus.UNAUTHORIZED
+      );
+    }
+
     const payload:JwtPayload = {
       userName: user.userName,
       provider,
+      confirmed: user.isEmailConfirmed,
       email: user.email,
     };
 
     // If the user exists, generate a JWT token
     switch (provider) {
       case 'google':
-        return this.generateTokens(payload, user.id);
+        return this.generateTokens(payload);
       case 'local':
-        if (await !bcrypt.compare(user.password, dto.password)) {
-          throw new ApplicationErrorException(
-              'E_0003',
-              undefined, HttpStatus.UNAUTHORIZED
-          );
-        }
-        return this.generateTokens(payload, user.id);
+        return this.generateTokens(payload);
       default:
         throw new ApplicationErrorException(
             'UNKNOWN'
@@ -131,10 +130,9 @@ export class AuthService {
   /**
    * Generates a JWT token based on the user's ID.
    * @param {JwtPayload} payload - The payload to sign.
-   * @param {string} userId - The ID of the user to generate the token for.
    * @return {Promise<string>} - The generated JWT token.
    */
-  async generateTokens(payload: JwtPayload, userId) {
+  async generateTokens(payload: JwtPayload) {
     const secret = this.config.get('jwt.secret');
     const expiresIn = this.config.get('jwt.expiresIn');
     const refreshExpiresIn = this.config.get('jwt.refreshExpiresIn');
@@ -143,11 +141,7 @@ export class AuthService {
         payload,
         {expiresIn: refreshExpiresIn, secret}
     );
-    const refreshTokenEntity = await this.refreshTokenRepository.create({
-      userId: userId,
-      refreshToken,
-    });
-    await this.refreshTokenRepository.save(refreshTokenEntity);
+
     return {accessToken, refreshToken};
   }
 
@@ -167,7 +161,7 @@ export class AuthService {
           HttpStatus.UNAUTHORIZED
       );
     } else {
-      const password = bcrypt.hashSync(dto.password, 15);
+      const password = await bcrypt.hashSync(dto.password, 15);
       const user = await this.userRepository.create({
         userName: dto.userName,
         email: dto.email,
@@ -178,27 +172,78 @@ export class AuthService {
       const payload:JwtPayload = {
         userName: dto.userName,
         provider: 'local',
+        confirmed: user.isEmailConfirmed,
         email: dto.email};
       // If the user doesn't exist, generate a JWT token
-      return this.generateTokens(payload, user.id);
+      return this.generateTokens(payload);
     }
   }
 
   /**
    * Refreshes a JWT token.
-   * @param {RefreshTokenDto} dto - The refresh token DTO.
-   * @return {Promise<{ accessToken: string }>} - The generated JWT token.
-   * @throws {Error} - If the token is invalid.
+    * @param {JwtPayload} decoded - JwtPayload.
+    * @return {Promise<{ accessToken: string, refreshToken: string }>}
    */
-  async refresh(dto: RefreshTokenDto) {
-    const refreshtoken = await this.refreshTokenRepository.findOne({where: {
-      refreshToken: dto.refreshToken,
-    }});
-    if (refreshtoken) {
-      const payload = {username: refreshtoken.userId, sub: refreshtoken.userId};
-      return {
-        accessToken: this.jwtService.sign(payload),
-      };
+  async refresh(decoded:JwtPayload) {
+    const payload = decoded;
+    return this.generateTokens(payload,);
+  }
+
+  /**
+   * Sends a verification email to the specified email address.
+   * @param {string}email
+   */
+  async sendResetPasswordEmail(email:string) {
+    const user = await this.userRepository.findOne({where: {email}});
+    if (!user) {
+      throw new ApplicationErrorException(
+          'E_0002',
+          undefined,
+          HttpStatus.UNAUTHORIZED
+      );
     }
+    return await this.emailService.sendResetPasswordEmail(email);
+  }
+
+  /**
+   *
+   * @param {string} token - The reset password token.
+   * @param {string} password - The new password.
+   *
+   *
+   */
+  async validateResetToken(token: string) {
+    const user = await this.userRepository.findOne(
+        {where: {resetPasswordToken: token}}
+    );
+    if (!user) {
+      throw new ApplicationErrorException(
+          'E_0007',
+          undefined,
+          HttpStatus.UNAUTHORIZED
+      );
+    }
+    return true;
+  }
+
+  /**
+   * Resets a user's password.
+   * @param {string} token - The reset password token.
+   * @param {string} password - The new password.
+   */
+  async resetPassword(token: string, password: string) {
+    const user = await this.userRepository.findOne(
+        {where: {resetPasswordToken: token}}
+    );
+    if (!user) {
+      throw new ApplicationErrorException(
+          'E_0007',
+          undefined,
+          HttpStatus.UNAUTHORIZED
+      );
+    }
+    user.password = await bcrypt.hashSync(password, 15);
+    await this.userRepository.save(user);
+    return {message: 'Password reset successful'};
   }
 }

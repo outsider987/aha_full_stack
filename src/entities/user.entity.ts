@@ -1,6 +1,5 @@
 import {OneToMany, Entity, PrimaryGeneratedColumn,
   Column, CreateDateColumn, UpdateDateColumn} from 'typeorm';
-import {RefreshToken} from './refreshTokens.entity';
 import {VerifyEmail} from './verifyEmail.entity';
 
 @Entity('users')
@@ -47,8 +46,9 @@ export class User {
   @Column()
     isEmailConfirmed: boolean;
 
-  @OneToMany(() => RefreshToken, (token) => token.userId)
-    refreshTokens: RefreshToken[];
+  @Column({nullable: true})
+    resetPasswordToken: string;
+
 
   @OneToMany(() => VerifyEmail, (verifyEmail) => verifyEmail.user)
     verifyEmails: VerifyEmail[];

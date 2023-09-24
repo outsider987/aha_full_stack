@@ -72,8 +72,8 @@ export class EmailService {
   }
 
   /**
-   * @param {string} verificationToken
    * The verification token to find the email by.
+   * @param {string} verificationToken
    * @return {Promise<VerifyEmail>}
    */
   async findByVerificationToken(verificationToken: string) {
@@ -87,5 +87,31 @@ export class EmailService {
     } else {
       return false;
     }
+  }
+
+  /**
+   * Sends a reset password email to the specified email address.
+   * @param {string}email
+   */
+  async sendResetPasswordEmail(email: string) {
+    const frontEndPoint = this.config.get('frontEndPoint');
+    const user = await this.userRepository.findOne({where: {email}});
+    user.resetPasswordToken = Math.random().toString(36).substring(2, 15);
+    await this.userRepository.save(user);
+
+
+    const resetPasswordLink = `
+    ${frontEndPoint}/reset-password?token=
+    ${user.resetPasswordToken}&
+    email=${email}`.replace(/\s/g, '');
+
+    const mailOptions = {
+      from: 't790219520@gmail.com',
+      to: email,
+      subject: 'Reset Password',
+      text: `Click the link to reset your password: ${resetPasswordLink}`,
+    };
+    const res = await this.transporter.sendMail(mailOptions);
+    console.log(res);
   }
 }

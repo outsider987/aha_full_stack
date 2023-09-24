@@ -8,6 +8,7 @@ import {AuthModule} from './api/auth/auth.module';
 import {LoggerMiddleware} from './middleware/logger.middleware';
 import {LocaleMiddleware} from './middleware/local.middleware';
 import {HealthChecksModule} from './api/health-checks/health-checks.module';
+import {UserModule} from './api/user/user.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import {HealthChecksModule} from './api/health-checks/health-checks.module';
     }),
     HealthChecksModule,
     AuthModule,
+    UserModule,
 
   ],
   controllers: [],
