@@ -3,6 +3,7 @@ import {AppModule} from './app.module';
 import {ValidationPipe} from '@nestjs/common';
 import {AllExceptionFilter} from './exceptions/all-exception.filter';
 import * as cookieParser from 'cookie-parser';
+import {setupSwagger} from './config/swagger';
 
 
 /**
@@ -34,7 +35,7 @@ async function bootstrap() {
 
   });
   app.use(cookieParser());
-
+  setupSwagger(app);
   await app.listen(3000);
 }
 bootstrap();

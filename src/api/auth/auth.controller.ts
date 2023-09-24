@@ -20,9 +20,11 @@ import {JwtPayload} from './interface';
 import {InjectRepository} from '@nestjs/typeorm';
 import {User} from 'src/entities/user.entity';
 import {Repository} from 'typeorm/repository/Repository';
+import {ApiOperation, ApiResponse, ApiTags} from '@nestjs/swagger';
 
 
 @Controller('auth')
+@ApiTags('Auth')
 /**
  * Controller for handling authentication related requests.
  */
@@ -48,6 +50,15 @@ export class AuthController {
      * @throws {Error} - If the user does not exist.
      */
     @Post('login')
+    @ApiOperation({summary: 'Login endpoint for generating a JWT token'})
+    @ApiResponse({
+      status: HttpStatus.OK,
+      description: 'JWT token generated successfully',
+    })
+    @ApiResponse({
+      status: HttpStatus.UNAUTHORIZED,
+      description: 'Invalid credentials',
+    })
   async login(@Body() dto:LoginDto, @Res({passthrough: true}) res:Response) {
     const {accessToken, refreshToken} = await this.authService.login(
         dto, 'local'
@@ -130,16 +141,19 @@ export class AuthController {
 
     /**
      * @param {string} token - The verification token.
+     * @param {Response} res - The response object.
      * @return {Promise<{ message: string }>} - The success message.
      * @throws {Error} - If the token is invalid.
      */
     @Get('verify-email/:token')
-    async verifyEmail(@Param('token') token: string) {
+    async verifyEmail(@Param('token') token: string, @Res() res:Response) {
+      const frontEndPoint = this.config.get('frontEndPoint');
       if (!await this.emailService.findByVerificationToken(token)) {
         throw new ApplicationErrorException(
             'E_0006', null, HttpStatus.UNAUTHORIZED);
       }
 
+      res.redirect(302, frontEndPoint);
       return successResponse({message: 'Email verification successful'});
     }
 

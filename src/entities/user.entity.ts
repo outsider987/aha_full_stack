@@ -1,6 +1,7 @@
 import {OneToMany, Entity, PrimaryGeneratedColumn,
-  Column, CreateDateColumn, UpdateDateColumn} from 'typeorm';
+  Column, CreateDateColumn, UpdateDateColumn, OneToOne} from 'typeorm';
 import {VerifyEmail} from './verifyEmail.entity';
+import {LoginInformation} from './loginInformation.entity';
 
 @Entity('users')
 /**
@@ -52,4 +53,6 @@ export class User {
 
   @OneToMany(() => VerifyEmail, (verifyEmail) => verifyEmail.user)
     verifyEmails: VerifyEmail[];
+  @OneToOne(() => LoginInformation, (loginInformation) => loginInformation)
+    loginInformation: LoginInformation;
 }

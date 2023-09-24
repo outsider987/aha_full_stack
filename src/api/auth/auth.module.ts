@@ -30,5 +30,7 @@ import {VerifyEmail} from 'src/entities/verifyEmail.entity';
 /**
  * Auth module.
  */
-export class AuthModule {}
+export class AuthModule {
+
+}
 

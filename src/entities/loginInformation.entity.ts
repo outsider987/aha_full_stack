@@ -1,4 +1,11 @@
-import {Entity, PrimaryGeneratedColumn, Column} from 'typeorm';
+import {Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  JoinColumn,
+  OneToOne,
+  CreateDateColumn,
+  UpdateDateColumn} from 'typeorm';
+import {User} from './user.entity';
 
 
 @Entity('login_information')
@@ -9,16 +16,23 @@ import {Entity, PrimaryGeneratedColumn, Column} from 'typeorm';
  * @property {number} loginCount - The number of times the user has logged in.
  * @property {Date} lastSessionTimestamp - The timestamp of the last session.
  */
-export class Logins {
+export class LoginInformation {
   @PrimaryGeneratedColumn()
     id: number;
 
-  @Column({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
-    signUpTimestamp: Date;
+  @OneToOne(() => User, (user) => user.id)
+  @JoinColumn({name: 'user_id'})
+    userId: number;
 
   @Column({default: 0})
     loginCount: number;
 
   @Column({type: 'timestamp', nullable: true})
     lastSessionTimestamp: Date;
+
+  @CreateDateColumn({type: 'timestamp'})
+    signUpTimestamp: Date;
+
+  @UpdateDateColumn({type: 'timestamp'})
+    lastLoginTimestamp: Date;
 }

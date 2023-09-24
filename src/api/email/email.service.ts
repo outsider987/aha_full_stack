@@ -45,7 +45,9 @@ export class EmailService {
    */
   async sendVerificationEmail(to: string) {
     const backEndPoint = this.config.get('backEndPoint');
-    const verificationLink = `${backEndPoint}/verify-email?token=`;
+    const verifyEmail = await this.createEmailToken(to, 1);
+    const verificationLink =
+    `${backEndPoint}/auth/verify-email/${verifyEmail.verificationToken}`;
     const mailOptions = {
       from: 't790219520@gmail.com',
       to,
@@ -101,9 +103,10 @@ export class EmailService {
 
 
     const resetPasswordLink = `
-    ${frontEndPoint}/reset-password?token=
+    ${frontEndPoint}/#/reset-password?token=
     ${user.resetPasswordToken}&
     email=${email}`.replace(/\s/g, '');
+    console.log('resetPasswordLink:', resetPasswordLink);
 
     const mailOptions = {
       from: 't790219520@gmail.com',
