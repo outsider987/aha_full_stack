@@ -1,7 +1,7 @@
-import {HttpException, HttpStatus} from '@nestjs/common';
-import {failureResponse} from '../utils/response';
-import errorCodesExternal from '../config/errorCodesExternal';
-import * as logger from '../utils/logger';
+import { HttpException, HttpStatus } from "@nestjs/common";
+import { failureResponse } from "../utils/response";
+import errorCodesExternal from "../config/errorCodesExternal";
+import * as logger from "../utils/logger";
 
 /**
  * Application Error Exception.
@@ -15,12 +15,12 @@ export class ApplicationErrorException extends HttpException {
    * @return {void}
    */
   constructor(
-      errorCode:keyof typeof errorCodesExternal,
-      remarks?,
-      httpStatusCode: HttpStatus = HttpStatus.BAD_REQUEST,
+    errorCode: keyof typeof errorCodesExternal,
+    remarks?,
+    httpStatusCode: HttpStatus = HttpStatus.BAD_REQUEST,
   ) {
     const errorMessage: string =
-    errorCodesExternal[errorCode][global.localeKey];
+      errorCodesExternal[errorCode][global.localeKey];
 
     logger.event({
       errorCode,

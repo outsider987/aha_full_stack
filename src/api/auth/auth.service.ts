@@ -1,19 +1,16 @@
-import {HttpStatus, Injectable} from '@nestjs/common';
-import {JwtService} from '@nestjs/jwt';
-import {InjectRepository} from '@nestjs/typeorm';
-import {User} from 'src/entities/user.entity';
-import {Repository} from 'typeorm';
-import {LoginDto} from './dtos/login.dto';
-import {RegisterDto} from './dtos/register.dto';
-import {JwtPayload} from './interface';
-import {
-  ApplicationErrorException,
-} from 'src/exceptions/application-error.exception';
-import * as bcrypt from 'bcrypt';
-import {ConfigService} from '@nestjs/config';
-import {EmailService} from '../email/email.service';
-import {LoginInformation} from 'src/entities/loginInformation.entity';
-
+import { HttpStatus, Injectable } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { InjectRepository } from "@nestjs/typeorm";
+import { User } from "src/entities/user.entity";
+import { Repository } from "typeorm";
+import { LoginDto } from "./dtos/login.dto";
+import { RegisterDto } from "./dtos/register.dto";
+import { JwtPayload } from "./interface";
+import { ApplicationErrorException } from "src/exceptions/application-error.exception";
+import * as bcrypt from "bcrypt";
+import { ConfigService } from "@nestjs/config";
+import { EmailService } from "../email/email.service";
+import { LoginInformation } from "src/entities/loginInformation.entity";
 
 @Injectable()
 /**
@@ -28,17 +25,15 @@ export class AuthService {
    * @param {ConfigService} config - The injected ConfigService instance.
    * @param {EmailService} emailService - The injected EmailService instance.
    */
-  constructor(private readonly jwtService: JwtService,
+  constructor(
+    private readonly jwtService: JwtService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(LoginInformation)
     private readonly loginInformationRepository: Repository<LoginInformation>,
     private readonly config: ConfigService,
     private readonly emailService: EmailService,
-  ) {
-
-  }
-
+  ) {}
 
   /**
    * Validates a JWT token.
@@ -51,7 +46,7 @@ export class AuthService {
       const decoded = await this.jwtService.verifyAsync(token);
       return decoded;
     } catch (error) {
-      throw new Error('Invalid token');
+      throw new Error("Invalid token");
     }
   }
 
@@ -62,12 +57,13 @@ export class AuthService {
    * @throws {Error} - If the user already exists.
    */
   async findOrCreateGoogleUser(profile: any): Promise<User> {
-    const user =await this.userRepository.findOne({where:
-       {googleId: profile.id, email: profile.emails[0].value}});
+    const user = await this.userRepository.findOne({
+      where: { googleId: profile.id, email: profile.emails[0].value },
+    });
 
     if (!user) {
       const user = this.userRepository.create({
-        userName: profile.name.familyName+profile.name.givenName,
+        userName: profile.name.familyName + profile.name.givenName,
         googleId: profile.id,
         email: profile.emails[0].value,
       });
@@ -86,32 +82,36 @@ export class AuthService {
    * @throws {Error} - If the user doesn't exist.
    * @throws {Error} - If the password is incorrect.
    */
-  async login(dto: LoginDto, provider:'google'|'local') {
-    const user = await this.userRepository.findOne({where: {email: dto.email}});
+  async login(dto: LoginDto, provider: "google" | "local") {
+    const user = await this.userRepository.findOne({
+      where: { email: dto.email },
+    });
 
     if (!user) {
       throw new ApplicationErrorException(
-          'E_0002',
-          undefined,
-          HttpStatus.UNAUTHORIZED
+        "E_0002",
+        undefined,
+        HttpStatus.UNAUTHORIZED,
       );
     }
 
     if (await !bcrypt.compareSync(dto.password, user.password)) {
       throw new ApplicationErrorException(
-          'E_0001',
-          undefined, HttpStatus.UNAUTHORIZED
+        "E_0001",
+        undefined,
+        HttpStatus.UNAUTHORIZED,
       );
     }
 
     if (!user.isEmailConfirmed) {
       throw new ApplicationErrorException(
-          'E_008',
-          undefined, HttpStatus.UNAUTHORIZED
+        "E_008",
+        undefined,
+        HttpStatus.UNAUTHORIZED,
       );
     }
 
-    const payload:JwtPayload = {
+    const payload: JwtPayload = {
       userName: user.userName,
       provider,
       confirmed: user.isEmailConfirmed,
@@ -119,21 +119,21 @@ export class AuthService {
     };
 
     this.loginInformationRepository.update(
-        {userId: user.id},
-        {loginCount: user.loginInformation.loginCount+1}
+      { userId: user.id },
+      { loginCount: user.loginInformation.loginCount + 1 },
     );
 
     // If the user exists, generate a JWT token
     switch (provider) {
-      case 'google':
+      case "google":
         return this.generateTokens(payload);
-      case 'local':
+      case "local":
         return this.generateTokens(payload);
       default:
         throw new ApplicationErrorException(
-            'UNKNOWN'
-            , undefined,
-            HttpStatus.BAD_REQUEST
+          "UNKNOWN",
+          undefined,
+          HttpStatus.BAD_REQUEST,
         );
     }
   }
@@ -143,16 +143,16 @@ export class AuthService {
    * @return {Promise<string>} - The generated JWT token.
    */
   async generateTokens(payload: JwtPayload) {
-    const secret = this.config.get('jwt.secret');
-    const expiresIn = this.config.get('jwt.expiresIn');
-    const refreshExpiresIn = this.config.get('jwt.refreshExpiresIn');
-    const accessToken = this.jwtService.sign(payload, {expiresIn, secret});
-    const refreshToken = this.jwtService.sign(
-        payload,
-        {expiresIn: refreshExpiresIn, secret}
-    );
+    const secret = this.config.get("jwt.secret");
+    const expiresIn = this.config.get("jwt.expiresIn");
+    const refreshExpiresIn = this.config.get("jwt.refreshExpiresIn");
+    const accessToken = this.jwtService.sign(payload, { expiresIn, secret });
+    const refreshToken = this.jwtService.sign(payload, {
+      expiresIn: refreshExpiresIn,
+      secret,
+    });
 
-    return {accessToken, refreshToken};
+    return { accessToken, refreshToken };
   }
 
   /**
@@ -162,13 +162,15 @@ export class AuthService {
    * @throws {Error} - If the user already exists.
    */
   async register(dto: RegisterDto) {
-    const user = await this.userRepository.findOne({where: {email: dto.email}});
+    const user = await this.userRepository.findOne({
+      where: { email: dto.email },
+    });
     // If the user already exists, throw an error
     if (user) {
       throw new ApplicationErrorException(
-          'E_0004',
-          undefined,
-          HttpStatus.UNAUTHORIZED
+        "E_0004",
+        undefined,
+        HttpStatus.UNAUTHORIZED,
       );
     } else {
       const password = await bcrypt.hashSync(dto.password, 15);
@@ -176,14 +178,15 @@ export class AuthService {
         userName: dto.userName,
         email: dto.email,
         password: password,
-        provider: 'local',
+        provider: "local",
       });
       await this.userRepository.save(user);
-      const payload:JwtPayload = {
+      const payload: JwtPayload = {
         userName: dto.userName,
-        provider: 'local',
+        provider: "local",
         confirmed: user.isEmailConfirmed,
-        email: dto.email};
+        email: dto.email,
+      };
 
       const loginInformation = this.loginInformationRepository.create({
         userId: user.id,
@@ -191,32 +194,31 @@ export class AuthService {
       });
       await this.loginInformationRepository.save(loginInformation);
 
-
       return this.generateTokens(payload);
     }
   }
 
   /**
    * Refreshes a JWT token.
-    * @param {JwtPayload} decoded - JwtPayload.
-    * @return {Promise<{ accessToken: string, refreshToken: string }>}
+   * @param {JwtPayload} decoded - JwtPayload.
+   * @return {Promise<{ accessToken: string, refreshToken: string }>}
    */
-  async refresh(decoded:JwtPayload) {
+  async refresh(decoded: JwtPayload) {
     const payload = decoded;
-    return this.generateTokens(payload,);
+    return this.generateTokens(payload);
   }
 
   /**
    * Sends a verification email to the specified email address.
    * @param {string}email
    */
-  async sendResetPasswordEmail(email:string) {
-    const user = await this.userRepository.findOne({where: {email}});
+  async sendResetPasswordEmail(email: string) {
+    const user = await this.userRepository.findOne({ where: { email } });
     if (!user) {
       throw new ApplicationErrorException(
-          'E_0002',
-          undefined,
-          HttpStatus.UNAUTHORIZED
+        "E_0002",
+        undefined,
+        HttpStatus.UNAUTHORIZED,
       );
     }
     return await this.emailService.sendResetPasswordEmail(email);
@@ -230,14 +232,14 @@ export class AuthService {
    *
    */
   async validateResetToken(token: string) {
-    const user = await this.userRepository.findOne(
-        {where: {resetPasswordToken: token}}
-    );
+    const user = await this.userRepository.findOne({
+      where: { resetPasswordToken: token },
+    });
     if (!user) {
       throw new ApplicationErrorException(
-          'E_0007',
-          undefined,
-          HttpStatus.UNAUTHORIZED
+        "E_0007",
+        undefined,
+        HttpStatus.UNAUTHORIZED,
       );
     }
     return true;
@@ -249,18 +251,18 @@ export class AuthService {
    * @param {string} password - The new password.
    */
   async resetPassword(token: string, password: string) {
-    const user = await this.userRepository.findOne(
-        {where: {resetPasswordToken: token}}
-    );
+    const user = await this.userRepository.findOne({
+      where: { resetPasswordToken: token },
+    });
     if (!user) {
       throw new ApplicationErrorException(
-          'E_0007',
-          undefined,
-          HttpStatus.UNAUTHORIZED
+        "E_0007",
+        undefined,
+        HttpStatus.UNAUTHORIZED,
       );
     }
     user.password = await bcrypt.hashSync(password, 15);
     await this.userRepository.save(user);
-    return {message: 'Password reset successful'};
+    return { message: "Password reset successful" };
   }
 }

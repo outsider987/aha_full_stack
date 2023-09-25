@@ -1,11 +1,14 @@
-import {Entity, PrimaryGeneratedColumn,
+import {
+  Entity,
+  PrimaryGeneratedColumn,
   Column,
   ManyToOne,
   JoinColumn,
-  CreateDateColumn} from 'typeorm';
-import {User} from './user.entity';
+  CreateDateColumn,
+} from "typeorm";
+import { User } from "./user.entity";
 
-@Entity('verify_email')
+@Entity("verify_email")
 /**
  * VerifyEmail entity.
  * @property {number} id - The ID of the verification email.
@@ -15,23 +18,27 @@ import {User} from './user.entity';
  */
 export class VerifyEmail {
   @PrimaryGeneratedColumn()
-    id: number;
+  id: number;
 
   @Column()
-    email: string;
+  email: string;
 
-  @Column({name: 'verification_token'})
-    verificationToken: string;
+  @Column({ name: "verification_token" })
+  verificationToken: string;
 
-  @CreateDateColumn({name: 'created_at', type: 'timestamp'})
-    createdAt: Date;
+  @CreateDateColumn({ name: "created_at", type: "timestamp" })
+  createdAt: Date;
 
-  @Column({name: 'expiration_date', type: 'timestamp'})
-    expirationDate: Date;
+  @Column({ name: "expiration_date", type: "timestamp" })
+  expirationDate: Date;
 
-  @Column({name: 'verify_token', type: 'varchar', length: 255, nullable: true})
-
+  @Column({
+    name: "verify_token",
+    type: "varchar",
+    length: 255,
+    nullable: true,
+  })
   @ManyToOne(() => User, (user) => user.verifyEmails)
-  @JoinColumn({name: 'user_id'})
-    user: User;
+  @JoinColumn({ name: "user_id" })
+  user: User;
 }

@@ -1,14 +1,18 @@
-import {MiddlewareConsumer, Module,
-  NestModule, RequestMethod} from '@nestjs/common';
-import {TypeOrmModule} from '@nestjs/typeorm';
-import {ConfigModule, ConfigService} from '@nestjs/config';
-import configuration from './config/configuration';
-import {JwtService} from '@nestjs/jwt';
-import {AuthModule} from './api/auth/auth.module';
-import {LoggerMiddleware} from './middleware/logger.middleware';
-import {LocaleMiddleware} from './middleware/local.middleware';
-import {HealthChecksModule} from './api/health-checks/health-checks.module';
-import {UserModule} from './api/user/user.module';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from "@nestjs/common";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import configuration from "./config/configuration";
+import { JwtService } from "@nestjs/jwt";
+import { AuthModule } from "./api/auth/auth.module";
+import { LoggerMiddleware } from "./middleware/logger.middleware";
+import { LocaleMiddleware } from "./middleware/local.middleware";
+import { HealthChecksModule } from "./api/health-checks/health-checks.module";
+import { UserModule } from "./api/user/user.module";
 
 @Module({
   imports: [
@@ -19,7 +23,7 @@ import {UserModule} from './api/user/user.module';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (config: ConfigService) => config.get('defaultConnection'),
+      useFactory: (config: ConfigService) => config.get("defaultConnection"),
       inject: [ConfigService],
     }),
     ConfigModule.forRoot({
@@ -30,7 +34,6 @@ import {UserModule} from './api/user/user.module';
     HealthChecksModule,
     AuthModule,
     UserModule,
-
   ],
   controllers: [],
   providers: [JwtService],
@@ -43,14 +46,14 @@ import {UserModule} from './api/user/user.module';
  */
 export class AppModule implements NestModule {
   /**
-     * Configures the middleware.
-     * @param {MiddlewareConsumer} consumer - The middleware consumer.
-     * @return {void}
-     */
+   * Configures the middleware.
+   * @param {MiddlewareConsumer} consumer - The middleware consumer.
+   * @return {void}
+   */
   configure(consumer: MiddlewareConsumer): any {
     consumer
-        .apply( LoggerMiddleware, LocaleMiddleware)
-        .exclude({path: '/health-check', method: RequestMethod.GET})
-        .forRoutes('*');
+      .apply(LoggerMiddleware, LocaleMiddleware)
+      .exclude({ path: "/health-check", method: RequestMethod.GET })
+      .forRoutes("*");
   }
 }

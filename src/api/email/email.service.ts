@@ -1,12 +1,11 @@
 // email.service.ts
-import {Injectable} from '@nestjs/common';
-import {ConfigService} from '@nestjs/config';
-import {InjectRepository} from '@nestjs/typeorm';
-import * as nodemailer from 'nodemailer';
-import {User} from 'src/entities/user.entity';
-import {VerifyEmail} from 'src/entities/verifyEmail.entity';
-import {Repository} from 'typeorm';
-
+import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { InjectRepository } from "@nestjs/typeorm";
+import * as nodemailer from "nodemailer";
+import { User } from "src/entities/user.entity";
+import { VerifyEmail } from "src/entities/verifyEmail.entity";
+import { Repository } from "typeorm";
 
 @Injectable()
 /**
@@ -28,30 +27,29 @@ export class EmailService {
   ) {
     this.transporter = nodemailer.createTransport({
       // Configure your email provider (SMTP, Mailgun, SendGrid, etc.)
-      host: 'smtp.sendgrid.net',
+      host: "smtp.sendgrid.net",
       port: 587,
       auth: {
-        user: 'apikey',
-        pass: config.get('SENDGRID_API_KEY'),
+        user: "apikey",
+        pass: config.get("SENDGRID_API_KEY"),
       },
     });
   }
 
   /**
    * Sends a verification email to the specified email address.
-    * @param {string}to The email address to send the verification email to.
-    * @return {Promise<void>}
-    * @constructor
+   * @param {string}to The email address to send the verification email to.
+   * @return {Promise<void>}
+   * @constructor
    */
   async sendVerificationEmail(to: string) {
-    const backEndPoint = this.config.get('backEndPoint');
+    const backEndPoint = this.config.get("backEndPoint");
     const verifyEmail = await this.createEmailToken(to, 1);
-    const verificationLink =
-    `${backEndPoint}/auth/verify-email/${verifyEmail.verificationToken}`;
+    const verificationLink = `${backEndPoint}/auth/verify-email/${verifyEmail.verificationToken}`;
     const mailOptions = {
-      from: 't790219520@gmail.com',
+      from: "t790219520@gmail.com",
       to,
-      subject: 'Email Verification',
+      subject: "Email Verification",
       text: `Click the link to verify your email: ${verificationLink}`,
     };
 
@@ -67,7 +65,7 @@ export class EmailService {
     const verifyEmail = await this.verifyEmailRepository.create({
       verificationToken: Math.random().toString(36).substring(2, 15),
       email,
-      user: {id: userId},
+      user: { id: userId },
     });
     await this.verifyEmailRepository.save(verifyEmail);
     return verifyEmail;
@@ -80,11 +78,13 @@ export class EmailService {
    */
   async findByVerificationToken(verificationToken: string) {
     const verifyEmail = await this.verifyEmailRepository.findOne({
-      where: {verificationToken},
+      where: { verificationToken },
     });
     if (verifyEmail) {
       this.verifyEmailRepository.remove(verifyEmail);
-      this.userRepository.update(verifyEmail.user.id, {isEmailConfirmed: true});
+      this.userRepository.update(verifyEmail.user.id, {
+        isEmailConfirmed: true,
+      });
       return true;
     } else {
       return false;
@@ -96,22 +96,21 @@ export class EmailService {
    * @param {string}email
    */
   async sendResetPasswordEmail(email: string) {
-    const frontEndPoint = this.config.get('frontEndPoint');
-    const user = await this.userRepository.findOne({where: {email}});
+    const frontEndPoint = this.config.get("frontEndPoint");
+    const user = await this.userRepository.findOne({ where: { email } });
     user.resetPasswordToken = Math.random().toString(36).substring(2, 15);
     await this.userRepository.save(user);
-
 
     const resetPasswordLink = `
     ${frontEndPoint}/#/reset-password?token=
     ${user.resetPasswordToken}&
-    email=${email}`.replace(/\s/g, '');
-    console.log('resetPasswordLink:', resetPasswordLink);
+    email=${email}`.replace(/\s/g, "");
+    console.log("resetPasswordLink:", resetPasswordLink);
 
     const mailOptions = {
-      from: 't790219520@gmail.com',
+      from: "t790219520@gmail.com",
       to: email,
-      subject: 'Reset Password',
+      subject: "Reset Password",
       text: `Click the link to reset your password: ${resetPasswordLink}`,
     };
     const res = await this.transporter.sendMail(mailOptions);

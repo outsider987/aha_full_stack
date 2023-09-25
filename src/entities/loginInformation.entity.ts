@@ -6,10 +6,10 @@ import {
   OneToOne,
   CreateDateColumn,
   UpdateDateColumn,
-} from 'typeorm';
-import {User} from './user.entity';
+} from "typeorm";
+import { User } from "./user.entity";
 
-@Entity('login_information')
+@Entity("login_information")
 /**
  * Login entity.
  * @property {number} id - The ID of the login.
@@ -19,28 +19,28 @@ import {User} from './user.entity';
  */
 export class LoginInformation {
   @PrimaryGeneratedColumn()
-    id: number;
+  id: number;
 
   // Define the one-to-one relationship with User entity
   @OneToOne(() => User, (user) => user.loginInformation)
-  @JoinColumn({name: 'user_id'})
-    userId: number;
+  @JoinColumn({ name: "user_id" })
+  userId: number;
 
-  @Column({name: 'login_count', default: 0})
-    loginCount: number;
+  @Column({ name: "login_count", default: 0 })
+  loginCount: number;
 
   @CreateDateColumn({
-    name: 'created_at',
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
+    name: "created_at",
+    type: "timestamp",
+    default: () => "CURRENT_TIMESTAMP",
   })
-    createdAt: Date;
+  createdAt: Date;
 
   @UpdateDateColumn({
-    name: 'updated_at',
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
+    name: "updated_at",
+    type: "timestamp",
+    default: () => "CURRENT_TIMESTAMP",
+    onUpdate: "CURRENT_TIMESTAMP",
   })
-    updatedAt: Date;
+  updatedAt: Date;
 }

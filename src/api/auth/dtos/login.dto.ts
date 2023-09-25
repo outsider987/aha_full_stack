@@ -1,4 +1,10 @@
-import {IsEmail, IsNotEmpty, IsString, Length, Matches} from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  Length,
+  Matches,
+} from "class-validator";
 
 /**
  * Login DTO class.
@@ -10,17 +16,14 @@ import {IsEmail, IsNotEmpty, IsString, Length, Matches} from 'class-validator';
 export class LoginDto {
   @IsEmail()
   @IsNotEmpty()
-    email: string;
+  email: string;
 
-    @IsString()
-    @IsNotEmpty()
-    @Length(8, 100)
-    @Matches(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&+=!-]).{8,}$/
-        , {
-          message:
-          `Password is too weak. It must contain at least one lowercase letter, 
+  @IsString()
+  @IsNotEmpty()
+  @Length(8, 100)
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&+=!-]).{8,}$/, {
+    message: `Password is too weak. It must contain at least one lowercase letter, 
           one uppercase letter, one digit, and one special character.`,
-        })
-      password: string;
+  })
+  password: string;
 }

@@ -1,4 +1,3 @@
-
 /**
  * Refresh token DTO.
  * @class
