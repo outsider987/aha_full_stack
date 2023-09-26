@@ -65,7 +65,8 @@ export class AuthService {
       const user = this.userRepository.create({
         userName: profile.name.familyName + profile.name.givenName,
         googleId: profile.id,
-        email: profile.emails[0].value
+        email: profile.emails[0].value,
+        provider: 'google'
       });
       user.isEmailConfirmed = true;
 
@@ -202,6 +203,7 @@ export class AuthService {
       };
 
       const loginInformation = this.loginInformationRepository.create({
+        user: { id: user.id },
         loginCount: 0
       });
       await this.loginInformationRepository.save(loginInformation);

@@ -83,9 +83,10 @@ export class EmailService {
     });
     if (verifyEmail) {
       this.verifyEmailRepository.remove(verifyEmail);
-      this.userRepository.update(verifyEmail.user.id, {
-        isEmailConfirmed: true
-      });
+      this.userRepository.update(
+        { email: verifyEmail.email },
+        { isEmailConfirmed: true }
+      );
       return true;
     } else {
       return false;

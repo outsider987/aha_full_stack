@@ -29,4 +29,42 @@ export class UserService {
     await this.userRepository.save(user);
     return { oldName, newName: user.userName };
   }
+
+  /**
+   * getUsersDashboard endpoint
+   */
+  async getUsersDashboard() {
+    const users = await this.userRepository.find({
+      select: ['id', 'email', 'userName'],
+      relations: { loginInformation: true }
+    });
+    return users;
+  }
+
+  /**
+   * getStatistics endpoint
+   */
+  async getStatistics() {
+    const users = await this.userRepository.find({
+      select: ['id', 'email', 'userName'],
+      relations: { loginInformation: true }
+    });
+
+    const usersSignedUp = users.length;
+    const usersTodayActive = users.filter((user) => {
+      const lastLogin = user.loginInformation.updatedAt;
+      const today = new Date();
+      const yesterday = new Date(today.setDate(today.getDate() - 1));
+      return lastLogin > yesterday;
+    }).length;
+
+    const usersThisWeekActive = users.filter((user) => {
+      const lastLogin = user.loginInformation.updatedAt;
+      const today = new Date();
+      const lastWeek = new Date(today.setDate(today.getDate() - 7));
+      return lastLogin > lastWeek;
+    }).length;
+
+    return { usersSignedUp, usersTodayActive, usersThisWeekActive };
+  }
 }

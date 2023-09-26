@@ -123,8 +123,8 @@ export class AuthController {
     localLog('start to googleLoginCallback');
     const token = await this.authService.login(req.user, 'google');
 
-    // const test = JSON.stringify(token);
     res.cookie('accessToken', token.accessToken);
+    res.cookie('refreshToken', token.refreshToken);
 
     const userObject = req.user.email;
     res.cookie('profile', userObject);
