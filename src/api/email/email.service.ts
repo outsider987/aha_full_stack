@@ -83,13 +83,13 @@ export class EmailService {
     });
     if (verifyEmail) {
       this.verifyEmailRepository.remove(verifyEmail);
-      this.userRepository.update(
+      const user = this.userRepository.update(
         { email: verifyEmail.email },
         { isEmailConfirmed: true }
       );
-      return true;
+      return user;
     } else {
-      return false;
+      return null;
     }
   }
 

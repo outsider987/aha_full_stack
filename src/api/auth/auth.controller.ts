@@ -158,12 +158,23 @@ export class AuthController {
   @Get('verify-email/:token')
   async verifyEmail(@Param('token') token: string, @Res() res: Response) {
     const frontEndPoint = this.config.get('frontEndPoint');
-    if (!(await this.emailService.findByVerificationToken(token))) {
+    const user = await this.emailService.findByVerificationToken(token);
+    if (!user) {
       throw new ApplicationErrorException(
         'E_0006',
         null,
         HttpStatus.UNAUTHORIZED
       );
+    } else {
+      const { accessToken, refreshToken } =
+        await this.authService.generateTokens({
+          email: user.raw.email,
+          confirmed: true,
+          userName: user.raw.userName,
+          provider: 'local'
+        });
+      res.cookie('accessToken', accessToken);
+      res.cookie('refreshToken', refreshToken);
     }
 
     res.redirect(302, frontEndPoint);
