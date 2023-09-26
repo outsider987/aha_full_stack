@@ -1,4 +1,4 @@
-import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 /**
  * Setup Swagger.
@@ -7,12 +7,12 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
  */
 export function setupSwagger(app) {
   const options = new DocumentBuilder()
-    .setTitle("AHA TEST")
-    .setDescription("FOR AHA TEST")
-    .setVersion("1.0")
-    .addTag("aha")
+    .setTitle('AHA TEST')
+    .setDescription('FOR AHA TEST')
+    .setVersion('1.0')
+    .addTag('aha')
     .build();
 
   const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup("api", app, document);
+  SwaggerModule.setup('api', app, document);
 }

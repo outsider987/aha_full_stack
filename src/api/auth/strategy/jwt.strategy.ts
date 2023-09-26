@@ -1,10 +1,9 @@
-import {Injectable} from '@nestjs/common';
-import {PassportStrategy} from '@nestjs/passport';
-import {Strategy, ExtractJwt} from 'passport-jwt';
-import {AuthService} from '../auth.service';
-import {ConfigService} from '@nestjs/config';
-import {JwtPayload} from '../interface';
-
+import { Injectable } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { Strategy, ExtractJwt } from 'passport-jwt';
+import { AuthService } from '../auth.service';
+import { ConfigService } from '@nestjs/config';
+import { JwtPayload } from '../interface';
 
 @Injectable()
 /**
@@ -17,12 +16,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * @param {ConfigService} config - The injected ConfigService instance.
    * - The AuthService instance for user validation.
    */
-  constructor(private readonly authService: AuthService,
-    private readonly config: ConfigService) {
+  constructor(
+    private readonly authService: AuthService,
+    private readonly config: ConfigService
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: config.get('jwt').secret,
+      secretOrKey: config.get('jwt').secret
     });
   }
 
@@ -32,6 +33,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * @return {Promise<any>} - An object containing user information.
    */
   async validate(payload: JwtPayload): Promise<any> {
-    return {...payload};
+    return { ...payload };
   }
 }

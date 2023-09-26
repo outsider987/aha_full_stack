@@ -7,28 +7,28 @@ import {
   Post,
   Req,
   Res,
-  UseGuards,
-} from "@nestjs/common";
-import { AuthService } from "./auth.service";
-import { AuthGuard } from "@nestjs/passport";
-import { LoginDto } from "./dtos/login.dto";
-import { successResponse } from "src/utils/response";
-import { RefreshTokenDto } from "./dtos/refresh.dto";
-import { RegisterDto } from "./dtos/register.dto";
-import { ConfigService } from "@nestjs/config";
-import { ApplicationErrorException } from "src/exceptions/application-error.exception";
-import { localLog } from "src/utils/logger";
-import { EmailService } from "../email/email.service";
-import { Response } from "express";
-import { ResetPasswordDto } from "./dtos/resetPassword.dto";
-import { JwtPayload } from "./interface";
-import { InjectRepository } from "@nestjs/typeorm";
-import { User } from "src/entities/user.entity";
-import { Repository } from "typeorm/repository/Repository";
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+  UseGuards
+} from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { AuthGuard } from '@nestjs/passport';
+import { LoginDto } from './dtos/login.dto';
+import { successResponse } from 'src/utils/response';
+import { RefreshTokenDto } from './dtos/refresh.dto';
+import { RegisterDto } from './dtos/register.dto';
+import { ConfigService } from '@nestjs/config';
+import { ApplicationErrorException } from 'src/exceptions/application-error.exception';
+import { localLog } from 'src/utils/logger';
+import { EmailService } from '../email/email.service';
+import { Response } from 'express';
+import { ResetPasswordDto } from './dtos/resetPassword.dto';
+import { JwtPayload } from './interface';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/entities/user.entity';
+import { Repository } from 'typeorm/repository/Repository';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-@Controller("auth")
-@ApiTags("Auth")
+@Controller('auth')
+@ApiTags('Auth')
 /**
  * Controller for handling authentication related requests.
  */
@@ -43,7 +43,7 @@ export class AuthController {
     private readonly config: ConfigService,
     private readonly emailService: EmailService,
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>
   ) {}
 
   /**
@@ -53,26 +53,26 @@ export class AuthController {
    * @return {Promise<{ accessToken: string }>} - The generated JWT token.
    * @throws {Error} - If the user does not exist.
    */
-  @Post("login")
-  @ApiOperation({ summary: "Login endpoint for generating a JWT token" })
+  @Post('login')
+  @ApiOperation({ summary: 'Login endpoint for generating a JWT token' })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "JWT token generated successfully",
+    description: 'JWT token generated successfully'
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: "Invalid credentials",
+    description: 'Invalid credentials'
   })
   async login(
     @Body() dto: LoginDto,
-    @Res({ passthrough: true }) res: Response,
+    @Res({ passthrough: true }) res: Response
   ) {
     const { accessToken, refreshToken } = await this.authService.login(
       dto,
-      "local",
+      'local'
     );
-    await res.cookie("accessToken", accessToken);
-    await res.cookie("refreshToken", refreshToken);
+    await res.cookie('accessToken', accessToken);
+    await res.cookie('refreshToken', refreshToken);
 
     return successResponse({ data: { accessToken, refreshToken } });
   }
@@ -84,13 +84,13 @@ export class AuthController {
    * @throws {Error} - If the user already exists.
    * @throws {Error} - If the passwords do not match.
    */
-  @Post("register")
+  @Post('register')
   async register(@Body() dto: RegisterDto) {
     if (dto.password !== dto.confirmPassword) {
       throw new ApplicationErrorException(
-        "E_0005",
+        'E_0005',
         null,
-        HttpStatus.UNAUTHORIZED,
+        HttpStatus.UNAUTHORIZED
       );
     }
     await this.authService.register(dto);
@@ -101,10 +101,10 @@ export class AuthController {
   /**
    * Login endpoint for google authentication.
    */
-  @Get("google")
-  @UseGuards(AuthGuard("google"))
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
   async googleLogin() {
-    localLog("googleLogin sucess");
+    localLog('googleLogin sucess');
   }
 
   /**
@@ -114,24 +114,24 @@ export class AuthController {
    * @return {Promise<{ token: string }>} - The generated JWT token.
    * @throws {Error} - If the user already exists.
    */
-  @Get("google/callback")
-  @UseGuards(AuthGuard("google"))
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
   async googleLoginCallback(
     @Req() req,
-    @Res({ passthrough: true }) res: Response,
+    @Res({ passthrough: true }) res: Response
   ) {
-    localLog("start to googleLoginCallback");
-    const token = await this.authService.login(req.user, "google");
+    localLog('start to googleLoginCallback');
+    const token = await this.authService.login(req.user, 'google');
 
     // const test = JSON.stringify(token);
-    res.cookie("accessToken", token.accessToken);
+    res.cookie('accessToken', token.accessToken);
 
     const userObject = req.user.email;
-    res.cookie("profile", userObject);
+    res.cookie('profile', userObject);
 
-    const frontEndPoint = this.config.get("frontEndPoint");
+    const frontEndPoint = this.config.get('frontEndPoint');
     const redirectUrl = `${frontEndPoint}`;
-    console.log(" googleLoginCallback redirectUrl", redirectUrl);
+    console.log(' googleLoginCallback redirectUrl', redirectUrl);
     await res.redirect(302, redirectUrl);
   }
 
@@ -139,10 +139,10 @@ export class AuthController {
    * Logout endpoint for google authentication.
    * @param {RefreshTokenDto} dto - The request object.
    */
-  @Post("refresh")
+  @Post('refresh')
   async refresh(@Body() dto: RefreshTokenDto) {
     const jwtPayload = (await this.authService.validateJwtToken(
-      dto.refreshToken,
+      dto.refreshToken
     )) as JwtPayload;
 
     const { accessToken } = await this.authService.refresh(jwtPayload);
@@ -155,42 +155,42 @@ export class AuthController {
    * @return {Promise<{ message: string }>} - The success message.
    * @throws {Error} - If the token is invalid.
    */
-  @Get("verify-email/:token")
-  async verifyEmail(@Param("token") token: string, @Res() res: Response) {
-    const frontEndPoint = this.config.get("frontEndPoint");
+  @Get('verify-email/:token')
+  async verifyEmail(@Param('token') token: string, @Res() res: Response) {
+    const frontEndPoint = this.config.get('frontEndPoint');
     if (!(await this.emailService.findByVerificationToken(token))) {
       throw new ApplicationErrorException(
-        "E_0006",
+        'E_0006',
         null,
-        HttpStatus.UNAUTHORIZED,
+        HttpStatus.UNAUTHORIZED
       );
     }
 
     res.redirect(302, frontEndPoint);
-    return successResponse({ message: "Email verification successful" });
+    return successResponse({ message: 'Email verification successful' });
   }
 
   /**
    * reset password
    * @param {string}dto
    */
-  @Post("reset-password")
+  @Post('reset-password')
   async forgotPassword(@Body() dto: { email: string }) {
     const user = await this.userRepository.findOne({
-      where: { email: dto.email },
+      where: { email: dto.email }
     });
 
     if (!user) {
       throw new ApplicationErrorException(
-        "E_0002",
+        'E_0002',
         null,
-        HttpStatus.UNAUTHORIZED,
+        HttpStatus.UNAUTHORIZED
       );
     }
 
     await this.emailService.sendResetPasswordEmail(dto.email);
 
-    return successResponse({ message: "Password reset email sent" });
+    return successResponse({ message: 'Password reset email sent' });
   }
 
   /**
@@ -200,25 +200,25 @@ export class AuthController {
    * @throws {Error} - If the token is invalid.
    * @throws {Error} - If the passwords do not match.
    */
-  @Post("reset-password/:token")
+  @Post('reset-password/:token')
   async resetPassword(
     @Body() dto: ResetPasswordDto,
-    @Param("token") token: string,
+    @Param('token') token: string
   ) {
     await this.authService.validateResetToken(token);
 
     // Check if the new password and confirmation password match
     if (dto.password !== dto.confirmPassword) {
       throw new ApplicationErrorException(
-        "E_0005",
+        'E_0005',
         null,
-        HttpStatus.UNAUTHORIZED,
+        HttpStatus.UNAUTHORIZED
       );
     }
 
     // Update the user's password
     await this.authService.resetPassword(token, dto.password);
 
-    return successResponse({ message: "Password reset successful" });
+    return successResponse({ message: 'Password reset successful' });
   }
 }

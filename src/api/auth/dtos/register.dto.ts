@@ -3,8 +3,8 @@ import {
   IsNotEmpty,
   IsString,
   Length,
-  Matches,
-} from "class-validator";
+  Matches
+} from 'class-validator';
 
 /**
  * RegisterDto
@@ -28,7 +28,7 @@ export class RegisterDto {
   @Length(8, 100) // Ensure the password has at least 8 characters
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&+=!-]).{8,}$/, {
     message: `Password is too weak. It must contain at least one lowercase letter, 
-        one uppercase letter, one digit, and one special character.`,
+        one uppercase letter, one digit, and one special character.`
   })
   password: string;
 

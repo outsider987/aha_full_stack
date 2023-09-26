@@ -1,11 +1,11 @@
-import { AuthGuard } from "@nestjs/passport";
-import { ExecutionContext, HttpStatus } from "@nestjs/common";
-import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
-import { ApplicationErrorException } from "../../../exceptions/application-error.exception";
+import { AuthGuard } from '@nestjs/passport';
+import { ExecutionContext, HttpStatus } from '@nestjs/common';
+import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
+import { ApplicationErrorException } from '../../../exceptions/application-error.exception';
 /**
  * JwtGuard
  */
-export class JwtGuard extends AuthGuard("jwt") {
+export class JwtGuard extends AuthGuard('jwt') {
   /**
    * Determines whether the request is authorized.
    * @param {ExecutionContext} context - The execution context.
@@ -13,10 +13,10 @@ export class JwtGuard extends AuthGuard("jwt") {
    */
   canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest<Request>();
-    const authorization = request.headers["authorization"];
-    const isBearerToken = authorization?.search("Bearer ") === 0;
+    const authorization = request.headers['authorization'];
+    const isBearerToken = authorization?.search('Bearer ') === 0;
     if (!authorization || !isBearerToken) {
-      throw new ApplicationErrorException("E_0007");
+      throw new ApplicationErrorException('E_0007');
     }
     return super.canActivate(context);
   }
@@ -32,16 +32,16 @@ export class JwtGuard extends AuthGuard("jwt") {
     if (err || !user) {
       if (info instanceof TokenExpiredError) {
         throw new ApplicationErrorException(
-          "E_0007",
+          'E_0007',
           undefined,
-          HttpStatus.UNAUTHORIZED,
+          HttpStatus.UNAUTHORIZED
         );
       }
       if (info instanceof JsonWebTokenError) {
         throw new ApplicationErrorException(
-          "E_0007",
+          'E_0007',
           undefined,
-          HttpStatus.UNAUTHORIZED,
+          HttpStatus.UNAUTHORIZED
         );
       }
       throw err || info;

@@ -1,4 +1,4 @@
-import {createHash, randomInt} from 'crypto';
+import { createHash, randomInt } from 'crypto';
 import * as moment from 'moment-timezone';
 
 const colours = {
@@ -18,7 +18,7 @@ const colours = {
     magenta: '\x1b[35m',
     cyan: '\x1b[36m',
     white: '\x1b[37m',
-    crimson: '\x1b[38m', // Scarlet
+    crimson: '\x1b[38m' // Scarlet
   },
   bg: {
     black: '\x1b[40m',
@@ -29,30 +29,35 @@ const colours = {
     magenta: '\x1b[45m',
     cyan: '\x1b[46m',
     white: '\x1b[47m',
-    crimson: '\x1b[48m',
-  },
+    crimson: '\x1b[48m'
+  }
 };
 
 export const generateRequestId = (request) => {
   return createHash('sha512')
-      .update(process.hrtime() + '|' + request.ip + '|' + randomInt(999999999))
-      .digest('hex')
-      .substring(0, 8);
+    .update(process.hrtime() + '|' + request.ip + '|' + randomInt(999999999))
+    .digest('hex')
+    .substring(0, 8);
 };
 
 export const event = (content) => {
   const log = {
     dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
     requestId: global.requestId,
-    content,
+    content
   };
   console.log(JSON.stringify(log));
 };
 
 export const localLog = (message) => {
-  let logContent = colours.fg.green + new Date().toLocaleString() +
-                    colours.fg.yellow + '\t[' + global.requestId + ']' +
-                    colours.reset;
+  let logContent =
+    colours.fg.green +
+    new Date().toLocaleString() +
+    colours.fg.yellow +
+    '\t[' +
+    global.requestId +
+    ']' +
+    colours.reset;
   if (Array.isArray(message)) {
     message.forEach((m) => {
       switch (typeof m) {
@@ -60,8 +65,8 @@ export const localLog = (message) => {
           logContent += '\t' + m;
           break;
         case 'object':
-          logContent += '\t' + colours.fg.magenta +
-           JSON.stringify(m) + colours.reset;
+          logContent +=
+            '\t' + colours.fg.magenta + JSON.stringify(m) + colours.reset;
           break;
       }
     });

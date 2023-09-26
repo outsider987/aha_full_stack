@@ -1,7 +1,7 @@
-import { Injectable, NestMiddleware } from "@nestjs/common";
-import { NextFunction, Request, Response } from "express";
-import * as logger from "../utils/logger";
-import { JwtService } from "@nestjs/jwt";
+import { Injectable, NestMiddleware } from '@nestjs/common';
+import { NextFunction, Request, Response } from 'express';
+import * as logger from '../utils/logger';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 /**
@@ -20,10 +20,10 @@ export class LoggerMiddleware implements NestMiddleware {
    */
   getUserId(request) {
     if (request.headers.authorization) {
-      const token = request.headers.authorization.replace("Bearer", "").trim();
+      const token = request.headers.authorization.replace('Bearer', '').trim();
       try {
         const validated = this.jwt.verify(token, {
-          secret: process.env.JWT_SECRET,
+          secret: process.env.JWT_SECRET
         });
         return validated.sub ?? undefined;
       } catch (error) {
@@ -52,9 +52,9 @@ export class LoggerMiddleware implements NestMiddleware {
       query: Object.keys(request.query).length > 0 ? request.query : undefined,
       body: Object.keys(request.body).length > 0 ? request.body : undefined,
       ip: request.ip,
-      userAgent: request.get("user-agent"),
+      userAgent: request.get('user-agent'),
       headers: request.headers,
-      clinicId: this.getUserId(request),
+      clinicId: this.getUserId(request)
     });
 
     next();
@@ -65,11 +65,11 @@ export class LoggerMiddleware implements NestMiddleware {
       const diff = process.hrtime(startAt);
       logger.event({
         response:
-          typeof responseBody === "string"
+          typeof responseBody === 'string'
             ? JSON.parse(responseBody)
             : typeof responseBody,
         statusCode: response.statusCode,
-        responseTime: (diff[0] * 1e3 + diff[1] * 1e-6).toFixed(2) + "ms",
+        responseTime: (diff[0] * 1e3 + diff[1] * 1e-6).toFixed(2) + 'ms'
       });
       response.send = send;
       return response.send(responseBody);

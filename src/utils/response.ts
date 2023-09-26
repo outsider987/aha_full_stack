@@ -4,18 +4,25 @@ export const successResponse = (response: Record<string, any> = []) => {
   return {
     success: true,
     requestId: global.requestId,
-    ...response,
+    ...response
   };
 };
 
-export const failureResponse = (message: string | [],
-    code: string, remarks?) => {
+export const failureResponse = (
+  message: string | [],
+  code: string,
+  remarks?
+) => {
   const lang = constants.lang[global.localeKey.toLowerCase()];
   if (typeof message === 'string') {
     message += ` (${lang.ERROR_CODE}: ${code}, 
       ${lang.REFERENCE_CODE}: ${global.requestId})`;
-    if (remarks && remarks.ResponseCode && remarks.ResponseEngMessage &&
-      remarks.ResponseChiMessage) {
+    if (
+      remarks &&
+      remarks.ResponseCode &&
+      remarks.ResponseEngMessage &&
+      remarks.ResponseChiMessage
+    ) {
       switch (lang) {
         case 'en':
           message += ` 
@@ -37,8 +44,8 @@ export const failureResponse = (message: string | [],
     requestId: global.requestId,
     error: {
       message,
-      code,
+      code
     },
-    remarks,
+    remarks
   };
 };
