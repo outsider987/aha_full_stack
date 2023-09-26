@@ -1,5 +1,4 @@
 import {
-  OneToMany,
   Entity,
   PrimaryGeneratedColumn,
   Column,
@@ -55,10 +54,10 @@ export class User {
   @Column({ name: "reset_password_token", nullable: true })
   resetPasswordToken: string;
 
-  @OneToMany(() => VerifyEmail, (verifyEmail) => verifyEmail.user)
+  @OneToOne(() => VerifyEmail, (verifyEmail) => verifyEmail.user)
   verifyEmails: VerifyEmail[];
 
-  @OneToOne(() => LoginInformation, (loginInformation) => loginInformation)
+  @OneToOne(() => LoginInformation, (loginInformation) => loginInformation.user)
   loginInformation: LoginInformation;
 
   @CreateDateColumn({

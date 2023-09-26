@@ -44,7 +44,7 @@ export class EmailService {
    */
   async sendVerificationEmail(to: string) {
     const backEndPoint = this.config.get("backEndPoint");
-    const verifyEmail = await this.createEmailToken(to, 1);
+    const verifyEmail = await this.createEmailToken(to);
     const verificationLink = `${backEndPoint}/auth/verify-email/${verifyEmail.verificationToken}`;
     const mailOptions = {
       from: "t790219520@gmail.com",
@@ -61,11 +61,12 @@ export class EmailService {
    * @param {string}email The email address to create the token for.
    * @param {number}userId The ID of the user to create the token for.
    */
-  async createEmailToken(email: string, userId: number) {
+  async createEmailToken(email: string) {
+    const user = await this.userRepository.findOne({ where: { email } });
     const verifyEmail = await this.verifyEmailRepository.create({
       verificationToken: Math.random().toString(36).substring(2, 15),
       email,
-      user: { id: userId },
+      user: { id: user.id },
     });
     await this.verifyEmailRepository.save(verifyEmail);
     return verifyEmail;

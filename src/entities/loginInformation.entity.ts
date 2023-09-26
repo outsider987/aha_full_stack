@@ -21,10 +21,9 @@ export class LoginInformation {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // Define the one-to-one relationship with User entity
-  @OneToOne(() => User, (user) => user.loginInformation)
+  @OneToOne(() => User, (user) => user.loginInformation.user)
   @JoinColumn({ name: "user_id" })
-  userId: number;
+  user: User;
 
   @Column({ name: "login_count", default: 0 })
   loginCount: number;

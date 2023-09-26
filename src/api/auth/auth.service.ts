@@ -67,8 +67,16 @@ export class AuthService {
         googleId: profile.id,
         email: profile.emails[0].value,
       });
+      user.isEmailConfirmed = true;
 
-      await this.userRepository.save(user);
+      const createdUser = await this.userRepository.save(user);
+
+      const loginInformation = await this.loginInformationRepository.create({
+        user: { id: createdUser.id },
+        loginCount: 0,
+      });
+      const res = await this.loginInformationRepository.save(loginInformation);
+      console.log(res);
       return user;
     }
     return user;
@@ -83,9 +91,10 @@ export class AuthService {
    * @throws {Error} - If the password is incorrect.
    */
   async login(dto: LoginDto, provider: "google" | "local") {
-    const user = await this.userRepository.findOne({
+    const temp = await this.userRepository.find({
       where: { email: dto.email },
     });
+    const user = temp[0];
 
     if (!user) {
       throw new ApplicationErrorException(
@@ -93,22 +102,14 @@ export class AuthService {
         undefined,
         HttpStatus.UNAUTHORIZED,
       );
-    }
+    } else {
+      const updateUser = await this.userRepository.findOne({
+        where: { email: dto.email },
+        relations: { loginInformation: true },
+      });
 
-    if (await !bcrypt.compareSync(dto.password, user.password)) {
-      throw new ApplicationErrorException(
-        "E_0001",
-        undefined,
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
-
-    if (!user.isEmailConfirmed) {
-      throw new ApplicationErrorException(
-        "E_008",
-        undefined,
-        HttpStatus.UNAUTHORIZED,
-      );
+      updateUser.loginInformation.loginCount += 1;
+      await this.userRepository.save(updateUser);
     }
 
     const payload: JwtPayload = {
@@ -118,16 +119,26 @@ export class AuthService {
       email: user.email,
     };
 
-    this.loginInformationRepository.update(
-      { userId: user.id },
-      { loginCount: user.loginInformation.loginCount + 1 },
-    );
-
     // If the user exists, generate a JWT token
     switch (provider) {
       case "google":
         return this.generateTokens(payload);
       case "local":
+        if (!user.isEmailConfirmed) {
+          throw new ApplicationErrorException(
+            "E_008",
+            undefined,
+            HttpStatus.UNAUTHORIZED,
+          );
+        }
+        if (await !bcrypt.compareSync(dto.password, user.password)) {
+          throw new ApplicationErrorException(
+            "E_0001",
+            undefined,
+            HttpStatus.UNAUTHORIZED,
+          );
+        }
+
         return this.generateTokens(payload);
       default:
         throw new ApplicationErrorException(
@@ -164,6 +175,7 @@ export class AuthService {
   async register(dto: RegisterDto) {
     const user = await this.userRepository.findOne({
       where: { email: dto.email },
+      relations: ["loginInformation"],
     });
     // If the user already exists, throw an error
     if (user) {
@@ -189,7 +201,6 @@ export class AuthService {
       };
 
       const loginInformation = this.loginInformationRepository.create({
-        userId: user.id,
         loginCount: 0,
       });
       await this.loginInformationRepository.save(loginInformation);
