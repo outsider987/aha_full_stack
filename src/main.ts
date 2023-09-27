@@ -24,13 +24,15 @@ async function bootstrap() {
     origin: [
       'https://accounts.google.com', // Google OAuth server domain
       'http://localhost:5173',
-      'https://outsider987.github.io'
+      'https://outsider987.github.io',
+      'https://aha-frontend-lemon.vercel.app',
+      'https://vercel.app'
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
 
     allowedHeaders: [
-      'Content-Type',
+      'content-type',
       'Authorization',
       'Access-Control-Allow-Origin'
     ]

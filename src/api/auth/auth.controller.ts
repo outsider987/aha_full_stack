@@ -65,15 +65,18 @@ export class AuthController {
   })
   async login(
     @Body() dto: LoginDto,
+    @Req() req,
     @Res({ passthrough: true }) res: Response
   ) {
     const { accessToken, refreshToken } = await this.authService.login(
       dto,
       'local'
     );
-    await res.cookie('accessToken', accessToken);
+    // await res.cookie('accessToken', accessToken);
     await res.cookie('refreshToken', refreshToken);
-
+    console.log(`cookietest ${JSON.stringify(req.cookies)}`);
+    await res.cookie('accessToken', accessToken, {});
+    res.cookie('refreshToken', refreshToken);
     return successResponse({ data: { accessToken, refreshToken } });
   }
 
@@ -122,8 +125,8 @@ export class AuthController {
   ) {
     localLog('start to googleLoginCallback');
     const token = await this.authService.login(req.user, 'google');
-
-    res.cookie('accessToken', token.accessToken);
+    console.log(`cookietest ${JSON.stringify(req.cookies)}`);
+    res.cookie('accessToken', token.accessToken, {});
     res.cookie('refreshToken', token.refreshToken);
 
     const userObject = req.user.email;
