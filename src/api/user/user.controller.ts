@@ -15,8 +15,13 @@ import { ConfigService } from '@nestjs/config';
 import { successResponse } from 'src/utils/response';
 import { Response } from 'express';
 import { AuthService } from '../auth/auth.service';
+import { ApiTags } from '@nestjs/swagger';
+import { ChangeNameDecorator } from './decorator/changeName';
+import { DashboardDecorator } from './decorator/dashboard';
+import { StatisticsDecorator } from './decorator/statistics';
 @UseGuards(JwtGuard)
 @Controller('user')
+@ApiTags('User')
 /**
  * Controller for handling authentication related requests.
  */
@@ -40,6 +45,7 @@ export class UserController {
    */
   @Post('changeName')
   @UseGuards(JwtGuard)
+  @ChangeNameDecorator()
   async modifiName(
     @Req() req,
     @Body() dto: ChangeNameDto,
@@ -69,6 +75,7 @@ export class UserController {
    * @param {Req} req - The request object.
    */
   @Get('dashboard')
+  @DashboardDecorator()
   async getUsers() {
     return await this.userService.getUsersDashboard();
   }
@@ -77,6 +84,7 @@ export class UserController {
    * Login endpoint for generating a JWT token.
    */
   @Get('statistics')
+  @StatisticsDecorator()
   async getStatistics() {
     return await this.userService.getStatistics();
   }

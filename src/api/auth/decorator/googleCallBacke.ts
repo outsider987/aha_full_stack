@@ -1,7 +1,7 @@
 import { HttpStatus, applyDecorators } from '@nestjs/common';
-import { ApiOperation, ApiProperty, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import errorCodesExternal from 'src/config/errorCodesExternal';
-import { SucessDeCorator, TokensResponse } from 'src/utils/decorator';
+import { TokensResponse } from 'src/utils/decorator';
 
 /**
  * Swagger decorator for the google call back endpoint
