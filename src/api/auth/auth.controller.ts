@@ -20,12 +20,15 @@ import { ApplicationErrorException } from 'src/exceptions/application-error.exce
 import { localLog } from 'src/utils/logger';
 import { EmailService } from '../email/email.service';
 import { Response } from 'express';
-import { ResetPasswordDto } from './dtos/resetPassword.dto';
+import {
+  ResetPasswordDto,
+  ResetPasswordMailDto
+} from './dtos/resetPassword.dto';
 import { JwtPayload } from './interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
 import { Repository } from 'typeorm/repository/Repository';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
 import {
   GoogleCallBackDecotator,
   RegisterDecotator,
@@ -207,7 +210,7 @@ export class AuthController {
    */
   @Post('reset-password')
   @ResetPasswordDecotator()
-  async forgotPassword(@Body() dto: { email: string }) {
+  async forgotPassword(@Body() dto: ResetPasswordMailDto) {
     const user = await this.userRepository.findOne({
       where: { email: dto.email }
     });
