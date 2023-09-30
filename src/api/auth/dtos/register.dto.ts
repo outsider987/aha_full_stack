@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
   IsNotEmpty,
@@ -17,12 +18,24 @@ import {
  * @param {string} twicePassword - The user's password again.
  */
 export class RegisterDto {
+  @ApiProperty({
+    example: 'John Doe',
+    description: 'Username'
+  })
   @IsString()
   userName: string;
 
+  @ApiProperty({
+    example: 'example@test.com',
+    description: 'Email'
+  })
   @IsEmail()
   email: string;
 
+  @ApiProperty({
+    example: 'Qwer1234+',
+    description: 'Password'
+  })
   @IsString()
   @IsNotEmpty()
   @Length(8, 100) // Ensure the password has at least 8 characters
@@ -32,6 +45,10 @@ export class RegisterDto {
   })
   password: string;
 
+  @ApiProperty({
+    example: 'Qwer1234+',
+    description: 'Confirm password'
+  })
   @IsString()
   @Length(8, 20)
   confirmPassword: string;

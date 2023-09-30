@@ -25,8 +25,15 @@ import { JwtPayload } from './interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
 import { Repository } from 'typeorm/repository/Repository';
-import { ApiTags } from '@nestjs/swagger';
-import { LoginDecotator } from './decorator/auth';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  GoogleCallBackDecotator,
+  RegisterDecotator,
+  LoginDecotator,
+  EmailVerifyDecotator,
+  ResetPasswordDecotator,
+  ResetPasswordTokenDecotator
+} from './decorator';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -66,17 +73,17 @@ export class AuthController {
       dto,
       'local'
     );
-    // await res.cookie('accessToken', accessToken);
-    // await res.cookie('refreshToken', refreshToken);
-    console.log(`cookietest ${JSON.stringify(req.cookies)}`);
+
     await res.cookie('accessToken', accessToken, {
-      // domain: 'https://aha-frontend-lemon.vercel.app',
-      // sameSite: 'none',
-      // secure: true
-      // httpOnly: true
-      // httpOnly: true
+      sameSite: 'none',
+      secure: true,
+      httpOnly: true
     });
-    // res.cookie('refreshToken', refreshToken);
+    res.cookie('refreshToken', refreshToken, {
+      sameSite: 'none',
+      secure: true,
+      httpOnly: true
+    });
     return successResponse({ data: { accessToken, refreshToken } });
   }
 
@@ -88,6 +95,7 @@ export class AuthController {
    * @throws {Error} - If the passwords do not match.
    */
   @Post('register')
+  @RegisterDecotator()
   async register(@Body() dto: RegisterDto) {
     if (dto.password !== dto.confirmPassword) {
       throw new ApplicationErrorException(
@@ -106,6 +114,10 @@ export class AuthController {
    */
   @UseGuards(AuthGuard('google'))
   @Get('google')
+  @ApiOperation({
+    summary: 'Login endpoint for google authentication call back',
+    description: 'Login endpoint for google authentication call back'
+  })
   async googleLogin() {
     localLog('googleLogin sucess');
   }
@@ -119,21 +131,20 @@ export class AuthController {
    */
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
+  @GoogleCallBackDecotator()
   async googleLoginCallback(
     @Req() req,
     @Res({ passthrough: true }) res: Response
   ) {
     localLog('start to googleLoginCallback');
     const token = await this.authService.login(req.user, 'google');
-    console.log(`cookietest ${JSON.stringify(req.cookies)}`);
+
     res.cookie('accessToken', token.accessToken, {
-      domain: 'https://aha-frontend-lemon.vercel.app',
-      sameSite: 'none'
+      secure: true,
+      sameSite: 'none',
+      httpOnly: true
     });
     res.cookie('refreshToken', token.refreshToken);
-
-    const userObject = req.user.email;
-    res.cookie('profile', userObject);
 
     const frontEndPoint = this.config.get('frontEndPoint');
     const redirectUrl = `${frontEndPoint}`;
@@ -146,13 +157,15 @@ export class AuthController {
    * @param {RefreshTokenDto} dto - The request object.
    */
   @Post('refresh')
+  @GoogleCallBackDecotator()
   async refresh(@Body() dto: RefreshTokenDto) {
     const jwtPayload = (await this.authService.validateJwtToken(
       dto.refreshToken
     )) as JwtPayload;
 
-    const { accessToken } = await this.authService.refresh(jwtPayload);
-    return successResponse({ data: accessToken });
+    const { accessToken, refreshToken } =
+      await this.authService.refresh(jwtPayload);
+    return successResponse({ data: { accessToken, refreshToken } });
   }
 
   /**
@@ -162,6 +175,7 @@ export class AuthController {
    * @throws {Error} - If the token is invalid.
    */
   @Get('verify-email/:token')
+  @EmailVerifyDecotator()
   async verifyEmail(@Param('token') token: string, @Res() res: Response) {
     const frontEndPoint = this.config.get('frontEndPoint');
     const user = await this.emailService.findByVerificationToken(token);
@@ -192,6 +206,7 @@ export class AuthController {
    * @param {string}dto
    */
   @Post('reset-password')
+  @ResetPasswordDecotator()
   async forgotPassword(@Body() dto: { email: string }) {
     const user = await this.userRepository.findOne({
       where: { email: dto.email }
@@ -218,13 +233,13 @@ export class AuthController {
    * @throws {Error} - If the passwords do not match.
    */
   @Post('reset-password/:token')
+  @ResetPasswordTokenDecotator()
   async resetPassword(
     @Body() dto: ResetPasswordDto,
     @Param('token') token: string
   ) {
     await this.authService.validateResetToken(token);
 
-    // Check if the new password and confirmation password match
     if (dto.password !== dto.confirmPassword) {
       throw new ApplicationErrorException(
         '4005',
@@ -233,7 +248,6 @@ export class AuthController {
       );
     }
 
-    // Update the user's password
     await this.authService.resetPassword(token, dto.password);
 
     return successResponse({ message: 'Password reset successful' });

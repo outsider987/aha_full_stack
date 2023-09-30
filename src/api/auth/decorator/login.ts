@@ -2,6 +2,7 @@ import { HttpStatus, applyDecorators } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { LoginDto } from '../dtos';
 import errorCodesExternal from 'src/config/errorCodesExternal';
+import { TokensResponse } from 'src/utils/decorator';
 
 /**
  * Swagger decorator for the login endpoint
@@ -13,7 +14,8 @@ export function LoginDecotator() {
     ApiOperation({ summary: 'Login endpoint for generating a JWT token' }),
     ApiResponse({
       status: HttpStatus.OK,
-      description: 'JWT token generated successfully'
+      description: 'JWT token generated successfully',
+      type: TokensResponse
     }),
     ApiResponse({
       status: 4003,

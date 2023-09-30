@@ -12,7 +12,7 @@ export default {
     Cn: '無效的憑證'
   },
   '4004': {
-    En: 'alreadt refistered',
+    En: 'already registered',
     Cn: '已經註冊'
   },
   '4005': {
