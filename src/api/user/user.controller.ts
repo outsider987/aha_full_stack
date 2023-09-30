@@ -48,7 +48,7 @@ export class UserController {
     const { email, provider, confirmed } = req.user;
 
     if (!req.user) {
-      throw new ApplicationErrorException('E_0007');
+      throw new ApplicationErrorException('4007');
     }
     const { newName, oldName } = await this.userService.modifiName(dto, email);
     const { accessToken, refreshToken } = await this.authService.generateTokens(

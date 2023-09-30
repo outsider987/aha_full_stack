@@ -5,6 +5,7 @@ import {
   Length,
   Matches
 } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 /**
  * Login DTO class.
@@ -14,10 +15,18 @@ import {
  * @param {string} password - The user's password.
  */
 export class LoginDto {
+  @ApiProperty({
+    example: 'john_doe@example.com',
+    description: 'Username'
+  })
   @IsEmail()
   @IsNotEmpty()
   email: string;
 
+  @ApiProperty({
+    example: 'password123',
+    description: 'Password'
+  })
   @IsString()
   @IsNotEmpty()
   @Length(8, 100)

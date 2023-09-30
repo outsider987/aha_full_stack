@@ -16,7 +16,7 @@ export class JwtGuard extends AuthGuard('jwt') {
     const authorization = request.headers['authorization'];
     const isBearerToken = authorization?.search('Bearer ') === 0;
     if (!authorization || !isBearerToken) {
-      throw new ApplicationErrorException('E_0007');
+      throw new ApplicationErrorException('4007');
     }
     return super.canActivate(context);
   }
@@ -32,14 +32,14 @@ export class JwtGuard extends AuthGuard('jwt') {
     if (err || !user) {
       if (info instanceof TokenExpiredError) {
         throw new ApplicationErrorException(
-          'E_0007',
+          '4007',
           undefined,
           HttpStatus.UNAUTHORIZED
         );
       }
       if (info instanceof JsonWebTokenError) {
         throw new ApplicationErrorException(
-          'E_0007',
+          '4007',
           undefined,
           HttpStatus.UNAUTHORIZED
         );

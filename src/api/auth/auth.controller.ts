@@ -25,7 +25,8 @@ import { JwtPayload } from './interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
 import { Repository } from 'typeorm/repository/Repository';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
+import { LoginDecotator } from './decorator/auth';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -49,20 +50,13 @@ export class AuthController {
   /**
    * Login endpoint for generating a JWT token.
    * @param {LoginDto} dto - The login DTO.
+   * @param {Request} req - The request object.
    * @param {Response} res - The response object.
    * @return {Promise<{ accessToken: string }>} - The generated JWT token.
    * @throws {Error} - If the user does not exist.
    */
   @Post('login')
-  @ApiOperation({ summary: 'Login endpoint for generating a JWT token' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'JWT token generated successfully'
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid credentials'
-  })
+  @LoginDecotator()
   async login(
     @Body() dto: LoginDto,
     @Req() req,
@@ -73,10 +67,16 @@ export class AuthController {
       'local'
     );
     // await res.cookie('accessToken', accessToken);
-    await res.cookie('refreshToken', refreshToken);
+    // await res.cookie('refreshToken', refreshToken);
     console.log(`cookietest ${JSON.stringify(req.cookies)}`);
-    await res.cookie('accessToken', accessToken, {});
-    res.cookie('refreshToken', refreshToken);
+    await res.cookie('accessToken', accessToken, {
+      // domain: 'https://aha-frontend-lemon.vercel.app',
+      // sameSite: 'none',
+      // secure: true
+      // httpOnly: true
+      // httpOnly: true
+    });
+    // res.cookie('refreshToken', refreshToken);
     return successResponse({ data: { accessToken, refreshToken } });
   }
 
@@ -91,7 +91,7 @@ export class AuthController {
   async register(@Body() dto: RegisterDto) {
     if (dto.password !== dto.confirmPassword) {
       throw new ApplicationErrorException(
-        'E_0005',
+        '4005',
         null,
         HttpStatus.UNAUTHORIZED
       );
@@ -104,8 +104,8 @@ export class AuthController {
   /**
    * Login endpoint for google authentication.
    */
-  @Get('google')
   @UseGuards(AuthGuard('google'))
+  @Get('google')
   async googleLogin() {
     localLog('googleLogin sucess');
   }
@@ -126,7 +126,10 @@ export class AuthController {
     localLog('start to googleLoginCallback');
     const token = await this.authService.login(req.user, 'google');
     console.log(`cookietest ${JSON.stringify(req.cookies)}`);
-    res.cookie('accessToken', token.accessToken, {});
+    res.cookie('accessToken', token.accessToken, {
+      domain: 'https://aha-frontend-lemon.vercel.app',
+      sameSite: 'none'
+    });
     res.cookie('refreshToken', token.refreshToken);
 
     const userObject = req.user.email;
@@ -164,7 +167,7 @@ export class AuthController {
     const user = await this.emailService.findByVerificationToken(token);
     if (!user) {
       throw new ApplicationErrorException(
-        'E_0006',
+        '4006',
         null,
         HttpStatus.UNAUTHORIZED
       );
@@ -196,7 +199,7 @@ export class AuthController {
 
     if (!user) {
       throw new ApplicationErrorException(
-        'E_0002',
+        '4002',
         null,
         HttpStatus.UNAUTHORIZED
       );
@@ -224,7 +227,7 @@ export class AuthController {
     // Check if the new password and confirmation password match
     if (dto.password !== dto.confirmPassword) {
       throw new ApplicationErrorException(
-        'E_0005',
+        '4005',
         null,
         HttpStatus.UNAUTHORIZED
       );

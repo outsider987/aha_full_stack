@@ -99,7 +99,7 @@ export class AuthService {
 
     if (!user) {
       throw new ApplicationErrorException(
-        'E_0002',
+        '4002',
         undefined,
         HttpStatus.UNAUTHORIZED
       );
@@ -128,14 +128,14 @@ export class AuthService {
       case 'local':
         if (!user.isEmailConfirmed) {
           throw new ApplicationErrorException(
-            'E_008',
+            '4008',
             undefined,
             HttpStatus.UNAUTHORIZED
           );
         }
         if (await !bcrypt.compareSync(dto.password, user.password)) {
           throw new ApplicationErrorException(
-            'E_0001',
+            '4001',
             undefined,
             HttpStatus.UNAUTHORIZED
           );
@@ -144,7 +144,7 @@ export class AuthService {
         return this.generateTokens(payload);
       default:
         throw new ApplicationErrorException(
-          'UNKNOWN',
+          '4100',
           undefined,
           HttpStatus.BAD_REQUEST
         );
@@ -182,7 +182,7 @@ export class AuthService {
     // If the user already exists, throw an error
     if (user) {
       throw new ApplicationErrorException(
-        'E_0004',
+        '4004',
         undefined,
         HttpStatus.UNAUTHORIZED
       );
@@ -230,7 +230,7 @@ export class AuthService {
     const user = await this.userRepository.findOne({ where: { email } });
     if (!user) {
       throw new ApplicationErrorException(
-        'E_0002',
+        '4002',
         undefined,
         HttpStatus.UNAUTHORIZED
       );
@@ -251,7 +251,7 @@ export class AuthService {
     });
     if (!user) {
       throw new ApplicationErrorException(
-        'E_0007',
+        '4007',
         undefined,
         HttpStatus.UNAUTHORIZED
       );
@@ -270,7 +270,7 @@ export class AuthService {
     });
     if (!user) {
       throw new ApplicationErrorException(
-        'E_0007',
+        '4007',
         undefined,
         HttpStatus.UNAUTHORIZED
       );

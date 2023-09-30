@@ -26,11 +26,14 @@ async function bootstrap() {
       'http://localhost:5173',
       'https://outsider987.github.io',
       'https://aha-frontend-lemon.vercel.app',
-      'https://vercel.app'
+      'https://vercel.app',
+      'https://aha-frontedn.fly.dev'
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
-
+    // exposedHeaders: ['set-cookie', 'Access-Control-Allow-Origin', 'Origin'],
+    // optionsSuccessStatus: 200,
+    exposedHeaders: ['set-cookie'],
     allowedHeaders: [
       'content-type',
       'Authorization',
