@@ -7,6 +7,7 @@ import {
 import Bugsnag from '@bugsnag/js';
 import { promises as fsPromises, existsSync as fsExistsSync } from 'fs';
 import { join } from 'path';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @Controller('health-check')
 /**
@@ -31,7 +32,11 @@ export class HealthChecksController {
    * @throws {Error} - If the database is not connected.
    */
   @Get('/')
+  @ApiTags('Health Check')
   @HealthCheck()
+  @ApiOperation({
+    summary: 'check backend health'
+  })
   async check() {
     const errors = [];
 

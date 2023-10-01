@@ -10,7 +10,7 @@ import { TokensResponse } from 'src/utils/decorator';
 export function RefreshDecotator() {
   return applyDecorators(
     ApiOperation({
-      summary: 'Refresh endpoint for creating a new user',
+      summary: 'Refresh endpoint to get new tokens',
       description: 'need to send refresh token'
     }),
     ApiResponse({

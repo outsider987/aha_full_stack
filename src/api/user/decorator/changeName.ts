@@ -1,5 +1,6 @@
 import { HttpStatus, applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { TokensResponse } from 'src/utils/decorator';
 
 /**
  * Swagger decorator for the change name endpoint
@@ -9,12 +10,13 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 export function ChangeNameDecorator() {
   return applyDecorators(
     ApiOperation({
-      summary: 'Change name endpoint for creating a new user',
-      description: "it doesn't need confimed email"
+      summary: 'Change name endpoint ',
+      description: 'will return tokens'
     }),
     ApiResponse({
       status: HttpStatus.OK,
-      description: 'change name successfully'
+      description: 'change name successfully',
+      type: TokensResponse
     }),
     ApiResponse({
       status: 4007,

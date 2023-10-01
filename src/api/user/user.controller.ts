@@ -56,7 +56,7 @@ export class UserController {
     if (!req.user) {
       throw new ApplicationErrorException('4007');
     }
-    const { newName, oldName } = await this.userService.modifiName(dto, email);
+    const { newName } = await this.userService.modifiName(dto, email);
     const { accessToken, refreshToken } = await this.authService.generateTokens(
       {
         email: email,
@@ -67,7 +67,7 @@ export class UserController {
     );
     await res.cookie('accessToken', accessToken);
     await res.cookie('refreshToken', refreshToken);
-    return successResponse({ newName, oldName });
+    return successResponse({ accessToken, refreshToken });
   }
 
   /**

@@ -46,7 +46,11 @@ export class AuthService {
       const decoded = await this.jwtService.verifyAsync(token);
       return decoded;
     } catch (error) {
-      throw new Error('Invalid token');
+      throw new ApplicationErrorException(
+        '4007',
+        undefined,
+        HttpStatus.UNAUTHORIZED
+      );
     }
   }
 

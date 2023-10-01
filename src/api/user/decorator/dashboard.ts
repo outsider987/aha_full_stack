@@ -9,8 +9,8 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 export function DashboardDecorator() {
   return applyDecorators(
     ApiOperation({
-      summary: 'Dashboard endpoint for creating a new user',
-      description: "it doesn't need confimed email"
+      summary: 'Dashboard endpoint get user data',
+      description: "list of user's dashboard"
     }),
     ApiResponse({
       status: HttpStatus.OK,

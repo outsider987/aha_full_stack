@@ -1,7 +1,6 @@
 import { HttpStatus, applyDecorators } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import errorCodesExternal from 'src/config/errorCodesExternal';
-import { RegisterDto } from '../dtos/register.dto';
 import { SucessDeCorator } from 'src/utils/decorator';
 
 /**
@@ -12,7 +11,7 @@ import { SucessDeCorator } from 'src/utils/decorator';
 export function EmailVerifyDecotator() {
   return applyDecorators(
     ApiOperation({
-      summary: 'Email verify endpoint for creating a new user',
+      summary: 'Email verify endpoint ',
       description:
         'it will send registeration email to user , and it will redirect to login page'
     }),

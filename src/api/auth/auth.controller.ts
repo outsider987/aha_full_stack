@@ -82,12 +82,12 @@ export class AuthController {
       secure: true,
       httpOnly: true
     });
-    res.cookie('refreshToken', refreshToken, {
+    await res.cookie('refreshToken', refreshToken, {
       sameSite: 'none',
       secure: true,
       httpOnly: true
     });
-    return successResponse({ data: { accessToken, refreshToken } });
+    return successResponse({ accessToken, refreshToken });
   }
 
   /**
@@ -168,7 +168,7 @@ export class AuthController {
 
     const { accessToken, refreshToken } =
       await this.authService.refresh(jwtPayload);
-    return successResponse({ data: { accessToken, refreshToken } });
+    return successResponse({ accessToken, refreshToken });
   }
 
   /**

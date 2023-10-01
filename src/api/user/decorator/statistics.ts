@@ -9,8 +9,8 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 export function StatisticsDecorator() {
   return applyDecorators(
     ApiOperation({
-      summary: 'Statistics endpoint for creating a new user',
-      description: "it doesn't need confimed email"
+      summary: 'Statistics endpoint get user data',
+      description: "list of user's statistics"
     }),
     ApiResponse({
       status: HttpStatus.OK,
