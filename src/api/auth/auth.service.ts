@@ -280,6 +280,7 @@ export class AuthService {
       );
     }
     user.password = await bcrypt.hashSync(password, 15);
+    user.resetPasswordToken = null;
     await this.userRepository.save(user);
     return { message: 'Password reset successful' };
   }
