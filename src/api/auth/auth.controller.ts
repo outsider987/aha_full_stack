@@ -241,6 +241,16 @@ export class AuthController {
     @Body() dto: ResetPasswordDto,
     @Param('token') token: string
   ) {
+    const user = await this.userRepository.findOne({
+      where: { resetPasswordToken: token }
+    });
+    if (!(await this.authService.checkPassword(dto.oldPassword, user))) {
+      throw new ApplicationErrorException(
+        '4001',
+        null,
+        HttpStatus.UNAUTHORIZED
+      );
+    }
     await this.authService.validateResetToken(token);
 
     if (dto.password !== dto.confirmPassword) {

@@ -283,4 +283,20 @@ export class AuthService {
     await this.userRepository.save(user);
     return { message: 'Password reset successful' };
   }
+
+  /**
+   * Checks if the password is correct.\
+   * @param {string} password - The password to check.
+   * @param {User} user - The user to check the password for.
+   */
+  async checkPassword(password: string, user: User) {
+    if (await !bcrypt.compareSync(password, user.password)) {
+      throw new ApplicationErrorException(
+        '4001',
+        undefined,
+        HttpStatus.UNAUTHORIZED
+      );
+    }
+    return true;
+  }
 }
