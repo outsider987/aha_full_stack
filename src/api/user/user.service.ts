@@ -38,7 +38,7 @@ export class UserService {
       select: ['id', 'email', 'userName'],
       relations: { loginInformation: true }
     });
-    return users;
+    return [...users];
   }
 
   /**

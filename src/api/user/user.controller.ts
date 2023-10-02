@@ -77,7 +77,7 @@ export class UserController {
   @Get('dashboard')
   @DashboardDecorator()
   async getUsers() {
-    return await this.userService.getUsersDashboard();
+    return successResponse(await this.userService.getUsersDashboard());
   }
 
   /**
@@ -86,6 +86,6 @@ export class UserController {
   @Get('statistics')
   @StatisticsDecorator()
   async getStatistics() {
-    return await this.userService.getStatistics();
+    return successResponse(await this.userService.getStatistics());
   }
 }

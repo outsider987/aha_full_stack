@@ -1,10 +1,11 @@
 import constants from '../config/constants';
 
-export const successResponse = (response: Record<string, any> = []) => {
+export const successResponse = (response: Record<any, any> = []) => {
+  const isArray = Array.isArray(response);
   return {
     success: true,
     requestId: global.requestId,
-    data: { ...response }
+    data: isArray ? [...response] : response
   };
 };
 
